@@ -206,6 +206,33 @@ def _json_ld_article(page: str) -> dict:
     return {}
 
 
+_DROP_BLOCKS = re.compile(
+    r"<(script|style|noscript|nav|header|footer|aside|form|figure)\b.*?</\1>", re.S | re.I
+)
+_PARA = re.compile(r"<p\b[^>]*>(.*?)</p>", re.S | re.I)
+
+
+def body_from_html(page: str, min_chars: int = 200) -> str:
+    """Fall back to the page's paragraphs when JSON-LD carries no articleBody.
+
+    BBC Bangla, The Daily Star and several smaller outlets emit Article markup
+    without the body in it, so JSON-LD alone recovered only the Prothom Alo
+    items. This takes the `<p>` runs after stripping navigation and script
+    blocks, and keeps the paragraphs long enough to be prose rather than
+    captions, bylines or share prompts.
+    """
+    cleaned = _DROP_BLOCKS.sub(" ", page)
+    paragraphs = []
+    for raw in _PARA.findall(cleaned):
+        text = html.unescape(_TAG.sub(" ", raw))
+        text = re.sub(r"\s+", " ", text).strip()
+        # Short fragments in a news page are captions, credits and UI chrome.
+        if len(text) >= 60:
+            paragraphs.append(text)
+    body = " ".join(paragraphs).strip()
+    return body if len(body) >= min_chars else ""
+
+
 def parse_article(page: str, url: str, outlet: str) -> dict | None:
     """Extract one record from an article page.
 
@@ -225,6 +252,8 @@ def parse_article(page: str, url: str, outlet: str) -> dict | None:
         # Prothom Alo double-escapes its body: &lt;p&gt; rather than <p>.
         body = _TAG.sub(" ", html.unescape(html.unescape(body)))
         body = re.sub(r"\s+", " ", body).strip()
+    if not body:
+        body = body_from_html(page)
 
     return {
         "outlet": outlet,

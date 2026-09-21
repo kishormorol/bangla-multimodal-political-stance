@@ -43,10 +43,20 @@ CANDIDATES = INTERIM / "candidates.csv"
 
 @dataclass
 class Fetcher:
-    """A rate-limited, robots-aware HTTP getter."""
+    """A rate-limited, robots-aware HTTP getter.
+
+    `timeout` is urllib's socket timeout, which only fires when a server goes
+    quiet — a host that dribbles bytes, or one whose TLS handshake stalls, can
+    hold a request open indefinitely. `max_bytes` caps how much is read and
+    `hard_deadline` caps the wall time of a single fetch, so one bad host costs
+    seconds rather than the whole run. Both were added after a backfill hung for
+    hours on 25 URLs.
+    """
 
     delay: float = 1.5
-    timeout: int = 25
+    timeout: int = 15
+    hard_deadline: float = 30.0
+    max_bytes: int = 4_000_000
     _robots: dict[str, urllib.robotparser.RobotFileParser | None] = None  # type: ignore[assignment]
     _last_request: float = 0.0
 
@@ -74,7 +84,7 @@ class Fetcher:
         try:
             request = Request(robots_url, headers={"User-Agent": USER_AGENT})
             with urlopen(request, timeout=self.timeout) as response:
-                body = response.read().decode("utf-8", errors="ignore")
+                body = response.read(self.max_bytes).decode("utf-8", errors="ignore")
         except HTTPError as error:
             if error.code in (401, 403):
                 log.warning(
@@ -108,13 +118,27 @@ class Fetcher:
             time.sleep(self.delay - elapsed)
         self._last_request = time.monotonic()
 
+        started = time.monotonic()
         try:
             request = Request(url, headers={"User-Agent": USER_AGENT})
             with urlopen(request, timeout=self.timeout) as response:
-                return response.read().decode("utf-8", errors="ignore")
+                chunks, total = [], 0
+                while True:
+                    if time.monotonic() - started > self.hard_deadline:
+                        log.debug("%s -> exceeded %.0fs deadline", url, self.hard_deadline)
+                        return None
+                    chunk = response.read(65536)
+                    if not chunk:
+                        break
+                    total += len(chunk)
+                    if total > self.max_bytes:
+                        log.debug("%s -> larger than %d bytes; truncating", url, self.max_bytes)
+                        break
+                    chunks.append(chunk)
+                return b"".join(chunks).decode("utf-8", errors="ignore")
         except HTTPError as error:
             log.debug("%s -> HTTP %s", url, error.code)
-        except (URLError, TimeoutError, OSError) as error:
+        except (URLError, TimeoutError, OSError, ValueError) as error:
             log.debug("%s -> %s", url, type(error).__name__)
         return None
 
