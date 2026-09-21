@@ -56,3 +56,27 @@ re-run it rather than working around it.
 * `data/` and `experiments/` are gitignored. Do not commit dataset files — the
   headlines and photos belong to the outlets they came from.
 * Use the arm64 interpreter on Apple silicon, not Anaconda's x86 build.
+
+## Training does not run on this Mac
+
+The data pipeline, the sklearn baselines and the whole test suite run locally.
+Fine-tuning the transformers does not:
+
+* **MPS hangs.** The first forward+backward of BanglaBERT on `mps` never
+  returns — not slow, hung, at 0% CPU.
+* **CPU is pathologically slow.** One batch-8, 256-token step did not finish in
+  100 seconds under torch 2.14 on Python 3.14, which is the likeliest cause.
+
+So run the CV sweep on a GPU: `notebooks/run_cv_colab.ipynb` does the whole
+thing on a Colab T4 and hands back `experiments/`, which `bmpb leaderboard`
+reads. Don't rediscover this by waiting on a local run.
+
+Two other environment traps that cost real time:
+
+* **Redirecting python output buffers it.** `python ... > log` holds the log
+  until the process exits, so a working run looks stalled. Use `python -u` or
+  `PYTHONUNBUFFERED=1`. Piping through `tail` is worse — it emits nothing until
+  stdin closes.
+* **The sandbox blocks HuggingFace's CDN.** `from_pretrained` stalls with no
+  error. Cache checkpoints in a network-enabled step, then train with
+  `HF_HUB_OFFLINE=1`.
