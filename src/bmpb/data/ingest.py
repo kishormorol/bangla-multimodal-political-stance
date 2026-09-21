@@ -117,6 +117,38 @@ def build_image_index(cfg: DataConfig, item_ids: list[str]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _attach_bodies(df: pd.DataFrame) -> pd.DataFrame:
+    """Use the recovered article body as `text` wherever `bmpb backfill` found one.
+
+    The headline stays in `title`, and `text_level` records which items are
+    article-level and which remained headline-only — the paper has to state that
+    split rather than average over it.
+    """
+    from bmpb.paths import INTERIM
+
+    bodies_file = INTERIM / "bodies.csv"
+    df["text_level"] = "headline"
+    if not bodies_file.exists():
+        return df
+
+    bodies = pd.read_csv(bodies_file)
+    recovered = bodies[(bodies["status"] == "ok") & bodies["body"].notna()]
+    if recovered.empty:
+        return df
+
+    lookup = recovered.set_index("item_id")["body"].to_dict()
+    hits = df["item_id"].isin(lookup)
+    df.loc[hits, "text"] = df.loc[hits, "item_id"].map(lookup)
+    df.loc[hits, "text_level"] = "article"
+    log.info(
+        "attached article bodies to %d of %d items (%d remain headline-only)",
+        int(hits.sum()),
+        len(df),
+        int((~hits).sum()),
+    )
+    return df
+
+
 def _merge_annotators(df: pd.DataFrame, cfg: DataConfig) -> pd.DataFrame:
     """Pull the three annotator columns back in from the annotation sheet.
 
@@ -194,6 +226,7 @@ def ingest(cfg: DataConfig | None = None, write: bool = True) -> pd.DataFrame:
     log.info("kept %d of %d rows after dropping unlabeled/empty/duplicate items", len(df), before)
 
     df = _merge_annotators(df, cfg)
+    df = _attach_bodies(df)
 
     images = build_image_index(cfg, df["item_id"].tolist())
     df = df.merge(images, on="item_id", how="left", suffixes=("_url_only", ""))

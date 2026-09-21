@@ -68,6 +68,19 @@ def collect(
     console.print(f"[green]pool:[/] {len(frame)} candidates")
 
 
+@app.command()
+def backfill(
+    limit: int = typer.Option(None, "--limit", help="try only this many items"),
+    delay: float = typer.Option(1.5, "--delay", help="seconds between requests"),
+) -> None:
+    """Recover full article text for corpus items that only have a headline."""
+    from bmpb.data.backfill import backfill as run_backfill
+
+    frame = run_backfill(limit=limit, delay=delay)
+    got = int((frame.status == "ok").sum())
+    console.print(f"[green]recovered:[/] {got} of {len(frame)} attempted")
+
+
 @app.command("merge-annotations")
 def merge_annotations(
     export: Path = typer.Option(..., "--export", exists=True, help="exported annotation JSON"),
