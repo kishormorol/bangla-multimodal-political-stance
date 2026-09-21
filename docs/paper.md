@@ -47,6 +47,43 @@ bmpb audit            # the dataset statistics quoted in the data section
 row traces to a run directory under `experiments/` that records its git commit
 and seed.
 
+## Two claims in the manuscript that the artifacts contradict
+
+These are not wording problems. Both are methodology claims that the files in
+`data/raw/` do not support, and both are the kind a reviewer checks.
+
+**"No fixed train-test split is used"** (§ Methodology). The manuscript says the
+dataset is evaluated with stratified 5-fold cross-validation. But the Drive
+folder ships a fixed split (`train_set.csv` 218 / `val_set.csv` 47 /
+`test_set.csv` 47), every prediction file has exactly 47 rows, and the label
+column of `BanglaBERT.csv` is identical, in order, to `test_set.csv`. Scoring
+those files reproduces Table "Performance of Transformer-Based Text Models"
+to three decimals:
+
+| Model | Paper acc / F1 | Recomputed acc / F1 |
+| --- | --- | --- |
+| BanglaBERT | 0.723 / 0.719 | 0.723 / 0.719 |
+| Bangla-ELECTRA | 0.468 / 0.462 | 0.468 / 0.462 |
+| mBERT | 0.638 / 0.649 | 0.638 / 0.649 |
+| XLM-RoBERTa | 0.362 / 0.215 | 0.362 / 0.215 |
+| mT5 | 0.319 / 0.161 | 0.319 / 0.161 |
+
+So the reported numbers come from one fixed split, not from cross-validation.
+
+**"Augmentation is applied only on the training folds … ensuring no augmented
+samples appear in validation data"** (§ Text Augmentation). In the shipped
+splits, `val_set.csv` contains 14 augmented rows of 47 and `test_set.csv`
+contains 20 of 47, and 25 source articles are shared between train and test
+(17 between train and val). Augmented variants of training articles are being
+scored as held-out test items.
+
+Either the artifacts are stale relative to the code that produced the tables, or
+the two claims need correcting. Deciding which needs the training code — the
+Drive folder's "Code" entry is a Google Doc, which is also what breaks the
+recursive download (see `data/README.md`). Until that is resolved, the
+recomputed column above is the evidence that the tables came from the fixed,
+leakage-affected split.
+
 ## Claims the manuscript needs to state
 
 These come out of `bmpb audit` and are documented in `data/README.md`. Each one
