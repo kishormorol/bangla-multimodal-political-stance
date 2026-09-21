@@ -3,24 +3,34 @@
 The manuscript lives in Overleaf:
 https://www.overleaf.com/project/69929902bff33e708abb74d9
 
-This directory is where the LaTeX source goes once it is mirrored, so the paper
-and the code that produced its numbers share a git history.
+`paper/` is a git-subtree mirror of that project, so the manuscript and the code
+that produced its numbers share one history. Nothing hand-written belongs in
+`paper/` — a `subtree push` would send it back to Overleaf — so this guide lives
+here instead.
 
 ## Mirroring Overleaf into this directory
 
 Overleaf projects expose a git remote (Overleaf menu → Git). One-time setup:
 
+The remote is already configured and the first import is done. For a fresh
+clone:
+
 ```bash
 git remote add overleaf https://git.overleaf.com/69929902bff33e708abb74d9
-git subtree add --prefix=paper overleaf master --squash   # first import
+git subtree add --prefix=paper overleaf main --squash
 ```
+
+Overleaf's default branch here is `main`, not `master`.
 
 Then, to pull the current manuscript and push edits back:
 
 ```bash
-git subtree pull --prefix=paper overleaf master --squash
-git subtree push --prefix=paper overleaf master
+git subtree pull --prefix=paper overleaf main --squash   # Overleaf -> repo
+git subtree push --prefix=paper overleaf main            # repo -> Overleaf
 ```
+
+Pull before editing locally: Overleaf commits on every keystroke-ish save, so
+the remote moves whenever the project is open in a browser.
 
 LaTeX build artifacts (`.aux`, `.bbl`, `.log`, …) under `paper/` are gitignored.
 
