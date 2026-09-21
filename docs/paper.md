@@ -105,3 +105,47 @@ changes how a result should be worded:
 * Inter-annotator agreement is **κ = 0.73** between the two annotators with full
   coverage; the third labelled 32 of 198 items and should be reported separately.
 * Headline and image labels agree on only **47.4%** of items labelled both ways.
+
+## The corrected evaluation protocol
+
+`bmpb cv` runs grouped stratified 5-fold cross-validation and is the only
+protocol the revised paper should report. Three properties matter, and each one
+fixes something the first submission got wrong:
+
+* **Folds are cut on the source article.** An augmented variant cannot land in
+  the fold that evaluates its parent.
+* **Augmentation happens inside each training half, after the cut.** The old
+  pipeline balanced first and split second, which put 20 augmented rows into a
+  47-item test set.
+* **Out-of-fold predictions are pooled.** Every item is predicted exactly once,
+  by the fold that did not train on it, so the headline figure covers the whole
+  corpus rather than averaging five small test sets. The per-fold mean and
+  standard deviation are reported beside it.
+
+Every run writes `cv.json` with per-fold scores, the pooled score, a bootstrap
+interval, the population it was scored on, and the git commit.
+
+### What the new numbers look like so far
+
+| Model | n | Pooled macro-F1 | 95% CI | Per-fold |
+| --- | ---: | ---: | --- | --- |
+| tfidf_logreg | 198 | 0.508 | 0.431–0.578 | 0.494 ± 0.082 |
+| majority | 198 | 0.212 | 0.163–0.260 | 0.130 ± 0.015 |
+
+The per-fold standard deviation is the column the first submission promised and
+never printed (§Experimental Setup: "standard deviation is considered to assess
+model stability"). At ±0.08 for a linear baseline, fold-to-fold variation is the
+same size as the gaps the paper treats as findings — so it belongs in every
+results table, next to `n`.
+
+## Article-level text
+
+`bmpb backfill` recovered full article bodies for **127 of 197** items with a
+source URL (64%). Corpus median text went from **8 words to 276**; the
+article-level subset has a median of 560 words.
+
+The 70 that failed are almost entirely outlets that refuse scripted requests —
+Jugantor (13), Bangla Tribune (10), Samakal (10), Somoy News (6), Ittefaq (5).
+`ingest` records `text_level` per item (`article` or `headline`), so the results
+section can report the two populations separately instead of averaging over a
+corpus where a third of the items are still headlines.
