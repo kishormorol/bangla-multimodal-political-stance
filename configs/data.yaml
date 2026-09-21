@@ -1,0 +1,69 @@
+# How the raw Drive files become the canonical corpus.
+#
+# The raw sheets were hand-maintained, so column names drift between files
+# ("FINAL LABEL" vs "Final_Label", "Preprocessed_Text" everywhere but nowhere
+# consistently cased). Rather than rename files by hand, every canonical field
+# lists the aliases seen in the wild and ingest takes the first one present.
+
+drive_folder_id: "1KbjKIuktu97dtVtahyZXjw7dCc3EBzqc"
+
+# The article-level sheet that defines the corpus. Final_Dataset.csv is
+# Preprocesing_Cleaned.csv minus two rows with unusable text.
+source_table: "Final_Dataset.csv"
+
+# The image-level sheet: which items have a usable processed image.
+image_table: "Final_Image_Dataset_WithText.csv"
+
+# The annotation sheet, kept only for the three annotator columns that
+# Final_Dataset.csv drops. Merged on Image_id during ingest.
+annotation_table: "Preprocesing.csv"
+
+columns:
+  item_id:     ["Image_id"]
+  title:       ["Title"]
+  text:        ["Preprocessed_Text"]
+  label:       ["FINAL LABEL", "Final_Label"]
+  article_label: ["Article Label"]
+  image_label: ["image label"]
+  image_url:   ["Image"]
+  image_path:  ["Image_Path"]
+  source_url:  ["source link"]
+  outlet:      ["newspaper name"]
+  date:        ["Date ", "Date"]
+  annotator_1: ["Annotator 1"]
+  annotator_2: ["Annotator 2 [Zannatul]"]
+  annotator_3: ["Annotator 3-MIM"]
+  is_augmented: ["is_augmented"]
+  source_index: ["source_index"]
+  augmentation_strategy: ["augmentation_strategy"]
+
+# Canonical label ids. These are the ids already baked into the published
+# prediction files, so they must not be renumbered.
+#   0 = govt_critique, 1 = neutral, 2 = govt_leaning
+label_map:
+  "0": "govt_critique"
+  "1": "neutral"
+  "2": "govt_leaning"
+  "Govt Critique": "govt_critique"
+  "Govt critique": "govt_critique"     # casing drifts in the raw annotation sheet
+  "Neutral": "neutral"
+  "neutral": "neutral"
+  "Govt Leaning": "govt_leaning"
+  "Govt leaning": "govt_leaning"
+
+image_dir: "images"
+processed_image_dir: "processed_images"
+image_extensions: [".jpg", ".jpeg", ".png", ".webp", ".avif"]
+
+split:
+  # Grouped by source_index so augmented variants of one article can never
+  # straddle a split boundary. See data/README.md for why this matters.
+  strategy: "grouped_stratified"
+  group_key: "source_index"
+  train: 0.70
+  val: 0.15
+  test: 0.15
+  seed: 42
+  augment_train: true   # augment after splitting, never before
+
+text_max_length: 256

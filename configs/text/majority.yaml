@@ -1,0 +1,8 @@
+# The floor: always predict the most frequent training class.
+name: majority
+modality: text
+family: majority
+num_labels: 3
+seed: 42
+params:
+  strategy: most_frequent

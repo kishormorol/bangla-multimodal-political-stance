@@ -1,0 +1,16 @@
+name: align
+modality: multimodal
+family: clip_like
+pretrained: kakaobrain/align-base
+num_labels: 3
+epochs: 10
+batch_size: 16
+learning_rate: 1.0e-4
+max_length: 64
+image_size: 289
+freeze_encoder: true
+class_weights: true
+early_stopping_patience: 3
+seed: 42
+params:
+  fusion: gated

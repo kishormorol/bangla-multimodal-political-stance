@@ -1,0 +1,12 @@
+name: bangla_electra
+modality: text
+family: hf_text_classifier
+pretrained: monsoon-nlp/bangla-electra
+num_labels: 3
+epochs: 8
+batch_size: 16
+learning_rate: 3.0e-5
+max_length: 256
+class_weights: true
+early_stopping_patience: 3
+seed: 42

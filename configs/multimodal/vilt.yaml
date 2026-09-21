@@ -1,0 +1,16 @@
+# ViLT truncates text at 40 tokens, so it sees roughly a headline's worth of a
+# news article. Worth keeping in the table for exactly that reason.
+name: vilt
+modality: multimodal
+family: fusion_encoder
+pretrained: dandelin/vilt-b32-mlm
+num_labels: 3
+epochs: 10
+batch_size: 8
+learning_rate: 5.0e-5
+max_length: 40
+image_size: 384
+freeze_encoder: true
+class_weights: true
+early_stopping_patience: 3
+seed: 42

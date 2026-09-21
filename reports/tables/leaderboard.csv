@@ -1,0 +1,14 @@
+model,source,modality,run,n,accuracy,macro_f1,ci_low,ci_high,notes
+BanglaBERT,published,,,47,0.723404255319149,0.7188915012190874,0.5777777777777778,0.83605750875463,test set is 47 items; differences smaller than the CI width are not meaningful
+mBERT,published,,,47,0.6382978723404256,0.6485671191553545,0.5094086021505376,0.7748148148148148,test set is 47 items; differences smaller than the CI width are not meaningful
+tfidf_logreg,this repo,text,tfidf_logreg-20260921-050609,29,0.5862068965517241,0.5541666666666667,0.3320465937571201,0.7306583938936879,test set is 29 items; differences smaller than the CI width are not meaningful
+BanglaELECTRA,published,,,47,0.46808510638297873,0.4615384615384615,0.3077454694423842,0.5959133910994054,test set is 47 items; differences smaller than the CI width are not meaningful
+ViLT,published,,,30,0.4666666666666667,0.45244238046095636,0.26981310803891445,0.6307052731466346,test set is 30 items; differences smaller than the CI width are not meaningful
+ALIGN,published,,,30,0.6,0.42339181286549704,0.26793745668745667,0.5426100288600288,test set is 30 items; differences smaller than the CI width are not meaningful
+BLIP,published,,,30,0.4666666666666667,0.415263748597082,0.24017614694831235,0.5831634629460716,test set is 30 items; differences smaller than the CI width are not meaningful
+FLAVA,published,,,30,0.43333333333333335,0.41111111111111115,0.22422636503281665,0.5833381895881896,test set is 30 items; differences smaller than the CI width are not meaningful
+CLIP,published,,,30,0.43333333333333335,0.38580246913580246,0.20923076923076925,0.5732482794982794,test set is 30 items; differences smaller than the CI width are not meaningful
+CountVec_ViT,published,,,30,0.3,0.280982905982906,0.12903108929406265,0.4378991977916393,test set is 30 items; differences smaller than the CI width are not meaningful
+XLMRoBERTa,published,,,47,0.3617021276595745,0.2148148148148148,0.13580246913580246,0.30001633986928095,test set is 47 items; differences smaller than the CI width are not meaningful
+mt5_predictions,published,,,47,0.3191489361702128,0.16129032258064516,0.10714285714285715,0.21256038647342992,test set is 47 items; differences smaller than the CI width are not meaningful; model predicted a single class for every item (degenerate)
+majority,this repo,text,majority-20260921-050606,29,0.27586206896551724,0.14414414414414414,0.08080808080808081,0.20634920634920637,test set is 29 items; differences smaller than the CI width are not meaningful; model predicted a single class for every item (degenerate)

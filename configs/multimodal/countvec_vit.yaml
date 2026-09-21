@@ -1,0 +1,17 @@
+# Shallow multimodal baseline: bag-of-words text features concatenated with
+# frozen ViT [CLS] features. The two streams never interact, which makes it the
+# right control for "does fusion actually buy anything".
+name: countvec_vit
+modality: multimodal
+family: countvec_vit
+num_labels: 3
+image_size: 224
+eval_batch_size: 16
+class_weights: true
+seed: 42
+params:
+  vision_model: google/vit-base-patch16-224-in21k
+  analyzer: word
+  ngram_range: [1, 2]
+  min_df: 2
+  max_features: 20000

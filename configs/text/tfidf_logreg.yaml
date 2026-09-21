@@ -1,0 +1,16 @@
+# Character n-gram TF-IDF + logistic regression.
+# At 200 articles this is the number the transformers have to beat.
+name: tfidf_logreg
+modality: text
+family: sklearn_text
+num_labels: 3
+class_weights: true
+seed: 42
+params:
+  vectorizer: tfidf
+  analyzer: char_wb
+  ngram_range: [2, 5]
+  min_df: 2
+  max_features: 50000
+  classifier: logreg
+  C: 1.0

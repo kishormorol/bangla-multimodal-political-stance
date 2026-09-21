@@ -1,0 +1,52 @@
+# ---- data ----
+# Raw Drive mirror and images are never committed; fetch them with `make data`.
+# The directory shape is tracked (via .gitkeep); the contents never are.
+data/raw/*
+data/interim/*
+data/processed/*
+!data/**/.gitkeep
+
+# ---- experiment output ----
+experiments/*
+!experiments/.gitkeep
+reports/figures/*
+!reports/figures/.gitkeep
+wandb/
+mlruns/
+lightning_logs/
+*.ckpt
+*.pt
+*.bin
+*.safetensors
+
+# ---- python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+.coverage
+htmlcov/
+
+# ---- latex (paper/ is an Overleaf mirror) ----
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.synctex.gz
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.toc
+
+# ---- os / editor ----
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,20 @@
+# mT5 as an encoder with a classification head.
+#
+# The published mt5_predictions.csv predicts "Neutral" for all 47 test rows —
+# what a seq2seq model does when asked to generate a label string from ~200
+# examples. Set params.as_generator to reproduce that; leave it off for a
+# setup that can actually learn the task.
+name: mt5
+modality: text
+family: hf_seq2seq_classifier
+pretrained: google/mt5-base
+num_labels: 3
+epochs: 8
+batch_size: 8
+learning_rate: 1.0e-4
+max_length: 256
+class_weights: true
+early_stopping_patience: 3
+seed: 42
+params:
+  as_generator: false

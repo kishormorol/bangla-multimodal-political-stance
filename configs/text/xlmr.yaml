@@ -1,0 +1,12 @@
+name: xlmr
+modality: text
+family: hf_text_classifier
+pretrained: xlm-roberta-base
+num_labels: 3
+epochs: 8
+batch_size: 16
+learning_rate: 1.5e-5   # XLM-R diverges at 2e-5 on a corpus this small
+max_length: 256
+class_weights: true
+early_stopping_patience: 3
+seed: 42

@@ -1,0 +1,3 @@
+# Convenience mirror of pyproject dependencies.
+# Preferred install:  pip install -e ".[dev,viz,fetch]"
+-e .[dev,viz,fetch]
