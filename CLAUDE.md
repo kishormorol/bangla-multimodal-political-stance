@@ -1,6 +1,6 @@
 # Working in this repo
 
-Bangla multimodal political bias detection: 198 annotated news items (headline +
+Bangla multimodal political stance detection: 198 annotated news items (headline +
 photo), three-way stance, text and vision-language baselines under one protocol.
 
 ## Ground rules

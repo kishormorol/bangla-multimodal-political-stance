@@ -1,4 +1,4 @@
-# Bangla Multimodal Political Bias — common tasks
+# Bangla Multimodal Political Stance — common tasks
 # Usage: make <target>.  `make help` lists everything.
 
 PY      ?= python3

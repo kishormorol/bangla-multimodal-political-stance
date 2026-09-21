@@ -1,21 +1,24 @@
 cff-version: 1.2.0
-title: "Bangla Multimodal Political Bias"
+title: "Bangla Multimodal Political Stance"
 message: "If you use this dataset or code, please cite the accompanying paper."
 type: software
 authors:
   - family-names: Morol
     given-names: Kishor
     orcid: "https://orcid.org/0000-0002-4468-8260"
-repository-code: "https://github.com/kishormorol/bangla-multimodal-political-bias"
+repository-code: "https://github.com/kishormorol/bangla-multimodal-political-stance"
 license: MIT
 version: 0.1.0
 abstract: >-
-  Dataset and baselines for political bias detection in Bangla news, combining
-  article text with the accompanying imagery. Covers Bangla and multilingual
-  text encoders and vision-language models under one evaluation protocol.
+  Dataset and baselines for political stance detection in Bangla news: each
+  item is labelled for the stance its framing takes toward the government,
+  from the story text and the photograph published with it. Covers Bangla and
+  multilingual text encoders and vision-language models under one evaluation
+  protocol.
 keywords:
   - bangla
   - bengali
-  - political bias
+  - political stance
+  - media framing
   - multimodal
   - vision-language

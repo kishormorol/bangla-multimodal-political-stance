@@ -1,4 +1,4 @@
-# Annotation guidelines — Bangla multimodal political bias
+# Annotation guidelines — Bangla multimodal political stance
 
 Version 1.0 · for the ARR October 2026 expansion round
 

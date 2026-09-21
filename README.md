@@ -1,7 +1,11 @@
-# Bangla Multimodal Political Bias
+# Bangla Multimodal Political Stance
 
 Detecting political stance in Bangla news from the headline *and* the photo that
-runs with it. This repository holds the dataset pipeline, the model comparison,
+runs with it. The label is the stance a story's *framing* takes toward the
+government — a property of the individual item, not an outlet-level bias score,
+which 198 items across 39 outlets could not support. The repository was named
+`bangla-multimodal-political-bias` until 2026-09-21; GitHub redirects the old
+URL. This repository holds the dataset pipeline, the model comparison,
 and the evaluation protocol behind the paper.
 
 Three-way stance: `govt_critique` (0), `neutral` (1), `govt_leaning` (2), over
