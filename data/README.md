@@ -12,9 +12,19 @@ data/
 
 Source folder: `https://drive.google.com/drive/folders/1KbjKIuktu97dtVtahyZXjw7dCc3EBzqc`
 
-Google rate-limits bulk downloads from shared folders. A first run often stops
-partway with *"Cannot retrieve the public link … have had many accesses"*; the
-download resumes, so re-run it after a few minutes.
+### The download is fiddly, for two separate reasons
+
+1. **The folder contains a Google Doc** ("Code"). Docs have no binary download
+   endpoint, so a recursive `gdown --folder` of the parent aborts when it
+   reaches that entry — taking the image folders with it. The error it prints,
+   *"Cannot retrieve the public link … have had many accesses"*, looks like
+   throttling and is not. `bmpb data` avoids this by fetching `images/` and
+   `processed_images/` by their own folder ids
+   (`drive_image_folder_id`, `drive_processed_image_folder_id` in
+   `configs/data.yaml`), so no recursive walk is needed.
+2. **Google also throttles bulk downloads** for real, with the same message.
+   That transfer resumes, so re-run `bmpb data` and it picks up only what is
+   missing. Expect to run it more than once for the image folders.
 
 ## What the corpus is
 

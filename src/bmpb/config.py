@@ -45,6 +45,10 @@ class DataConfig:
 
     drive_folder_id: str
     source_table: str  # file under data/raw/ that defines the corpus
+    # The image subfolders are addressed directly: a recursive walk of the
+    # parent folder dies on the Google Doc it contains. See data/download.py.
+    drive_image_folder_id: str | None = None
+    drive_processed_image_folder_id: str | None = None
     image_table: str | None = None  # file that maps items to image filenames
     annotation_table: str | None = None  # file carrying the per-annotator labels
     columns: dict[str, list[str]] = field(default_factory=dict)  # canonical -> aliases

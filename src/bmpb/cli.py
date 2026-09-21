@@ -33,8 +33,7 @@ def data(
     from bmpb.config import DataConfig
     from bmpb.data.download import download
 
-    cfg = DataConfig.load()
-    download(cfg.drive_folder_id, images=not no_images)
+    download(DataConfig.load(), images=not no_images)
 
 
 @app.command()

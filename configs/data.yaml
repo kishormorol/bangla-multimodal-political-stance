@@ -7,6 +7,13 @@
 
 drive_folder_id: "1KbjKIuktu97dtVtahyZXjw7dCc3EBzqc"
 
+# The two image subfolders are fetched by id rather than by recursing into the
+# parent: the parent also holds a Google Doc ("Code"), and gdown's recursive
+# walk aborts on it — reporting a misleading "have had many accesses" error and
+# taking the image folders down with it.
+drive_image_folder_id: "1VpnZPLaNPcGjKJfOTviWueUVBWNgKoBp"
+drive_processed_image_folder_id: "1W0q2PfQTsOCfm1FxtZU-PwTtyLzGW8Se"
+
 # The article-level sheet that defines the corpus. Final_Dataset.csv is
 # Preprocesing_Cleaned.csv minus two rows with unusable text.
 source_table: "Final_Dataset.csv"
