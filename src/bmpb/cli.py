@@ -114,6 +114,23 @@ def train(
 
 
 @app.command()
+def cv(
+    config: Path = typer.Option(..., "--config", "-c", exists=True, help="experiment config"),
+    folds: int = typer.Option(5, "--folds", help="number of cross-validation folds"),
+    out: Path = typer.Option(EXPERIMENTS, "--out", "-o"),
+) -> None:
+    """Cross-validate one model under the shared protocol."""
+    from bmpb.crossval import cross_validate
+
+    s = cross_validate(config, n_splits=folds, out=out)
+    lo, hi = s["macro_f1_ci95"] or [float("nan")] * 2
+    console.print(
+        f"[green]{s['name']}[/]  macro-F1 {s['macro_f1']:.3f} [{lo:.3f}-{hi:.3f}]  "
+        f"per-fold {s['fold_macro_f1_mean']:.3f} ± {s['fold_macro_f1_sd']:.3f}"
+    )
+
+
+@app.command()
 def evaluate(run: Path = typer.Option(..., "--run", "-r", exists=True)) -> None:
     """Rescore a finished run from its predictions.csv."""
     from bmpb.evaluate import evaluate_run

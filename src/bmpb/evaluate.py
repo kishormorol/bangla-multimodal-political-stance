@@ -92,9 +92,49 @@ def evaluate_published(raw: Path = RAW) -> pd.DataFrame:
     return pd.DataFrame(rows).sort_values("macro_f1", ascending=False).reset_index(drop=True)
 
 
+def collect_cv_runs(runs_dir: Path | str = EXPERIMENTS) -> pd.DataFrame:
+    """Cross-validated runs — the protocol the paper should report."""
+    rows = []
+    for run in sorted(Path(runs_dir).glob("cv-*/")):
+        summary_file = run / "cv.json"
+        if not summary_file.exists():
+            continue
+        s = json.loads(summary_file.read_text())
+        ci = s.get("macro_f1_ci95") or [None, None]
+        rows.append(
+            {
+                "model": s.get("name", run.name),
+                "source": "5-fold CV",
+                "modality": s.get("modality"),
+                "population": s.get("population"),
+                "run": run.name,
+                "n": s.get("items_scored"),
+                "accuracy": s.get("accuracy"),
+                "macro_f1": s.get("macro_f1"),
+                "ci_low": ci[0],
+                "ci_high": ci[1],
+                "fold_mean": s.get("fold_macro_f1_mean"),
+                "fold_sd": s.get("fold_macro_f1_sd"),
+                "notes": "; ".join(s.get("notes", [])),
+            }
+        )
+    frame = pd.DataFrame(rows)
+    if len(frame):
+        # Keep the newest run per model so a re-run supersedes its predecessor.
+        frame = (
+            frame.sort_values("run")
+            .drop_duplicates(subset="model", keep="last")
+            .sort_values("macro_f1", ascending=False)
+            .reset_index(drop=True)
+        )
+    return frame
+
+
 def collect_runs(runs_dir: Path | str = EXPERIMENTS) -> pd.DataFrame:
     rows = []
     for run in sorted(Path(runs_dir).glob("*/")):
+        if run.name.startswith("cv-"):
+            continue  # cross-validated runs are collected separately
         metrics_file = run / "metrics.json"
         meta_file = run / "run.json"
         if not metrics_file.exists():
@@ -126,7 +166,11 @@ def collect_runs(runs_dir: Path | str = EXPERIMENTS) -> pd.DataFrame:
 
 def leaderboard(runs_dir: Path | str = EXPERIMENTS, out: Path | str = TABLES) -> Path:
     """Write reports/tables/leaderboard.md from local runs plus published CSVs."""
-    frames = [f for f in (collect_runs(runs_dir), evaluate_published()) if len(f)]
+    frames = [
+        f
+        for f in (collect_cv_runs(runs_dir), collect_runs(runs_dir), evaluate_published())
+        if len(f)
+    ]
     if not frames:
         raise RuntimeError(
             "nothing to report: no runs in experiments/ and no prediction CSVs in data/raw/"
@@ -140,12 +184,22 @@ def leaderboard(runs_dir: Path | str = EXPERIMENTS, out: Path | str = TABLES) ->
     lines = [
         "# Results",
         "",
-        "Macro-F1 is the headline metric; the 95% interval is a 2000-round item bootstrap.",
-        "Rows marked `published` are scored from the prediction files in the Drive folder",
-        "and were produced on the original, leakage-affected splits — see data/README.md.",
+        "Macro-F1 is the headline metric; the 95% interval is a 2000-round item bootstrap",
+        "over pooled out-of-fold predictions. **Only rows marked `5-fold CV` are mutually",
+        "comparable** — they share one grouped, stratified protocol with augmentation applied",
+        "inside the training folds.",
         "",
-        "| Model | Source | n | Accuracy | Macro-F1 | 95% CI | Notes |",
-        "| --- | --- | ---: | ---: | ---: | --- | --- |",
+        "Rows marked `published` are scored from the prediction files in the Drive folder.",
+        "They come from three different protocols (see `notebooks/original/README.md`) and the",
+        "text-model rows are computed on a test set containing augmented variants of training",
+        "articles, so they are optimistic. They are kept here for traceability to the first",
+        "submission, not for comparison.",
+        "",
+        "`per-fold` is the mean ± standard deviation across folds; a wide spread means the",
+        "pooled figure rests on folds that disagree.",
+        "",
+        "| Model | Protocol | Population | n | Accuracy | Macro-F1 | 95% CI | Per-fold | Notes |",
+        "| --- | --- | --- | ---: | ---: | ---: | --- | --- | --- |",
     ]
     for row in table.itertuples():
         ci = (
@@ -153,9 +207,16 @@ def leaderboard(runs_dir: Path | str = EXPERIMENTS, out: Path | str = TABLES) ->
             if pd.notna(row.ci_low) and pd.notna(row.ci_high)
             else "—"
         )
+        fold = (
+            f"{row.fold_mean:.3f} ± {row.fold_sd:.3f}"
+            if pd.notna(getattr(row, "fold_mean", None)) and pd.notna(getattr(row, "fold_sd", None))
+            else "—"
+        )
+        population = getattr(row, "population", None)
         lines.append(
-            f"| {row.model} | {row.source} | {row.n} | {row.accuracy:.3f} | "
-            f"{row.macro_f1:.3f} | {ci} | {row.notes or ''} |"
+            f"| {row.model} | {row.source} | {population if pd.notna(population) else '—'} | "
+            f"{row.n} | {row.accuracy:.3f} | {row.macro_f1:.3f} | {ci} | {fold} | "
+            f"{row.notes or ''} |"
         )
     path = out / "leaderboard.md"
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
