@@ -56,6 +56,30 @@ def splits() -> None:
 
 
 @app.command()
+def collect(
+    days: int = typer.Option(30, "--days", help="how many days of archive to walk"),
+    limit: int = typer.Option(800, "--limit", help="stop after this many candidates"),
+    delay: float = typer.Option(1.5, "--delay", help="seconds between requests"),
+) -> None:
+    """Gather new candidate items into data/interim/candidates.csv."""
+    from bmpb.data.collect import collect as run_collect
+
+    frame = run_collect(days=days, limit=limit, delay=delay)
+    console.print(f"[green]pool:[/] {len(frame)} candidates")
+
+
+@app.command("merge-annotations")
+def merge_annotations(
+    export: Path = typer.Option(..., "--export", exists=True, help="exported annotation JSON"),
+) -> None:
+    """Merge annotator output into labelled rows and report agreement."""
+    from bmpb.data.annotations import merge
+
+    frame = merge(export)
+    console.print(f"[green]merged:[/] {len(frame)} items")
+
+
+@app.command()
 def audit() -> None:
     """Report label balance, image coverage, and split leakage."""
     from bmpb.audit import run_audit
