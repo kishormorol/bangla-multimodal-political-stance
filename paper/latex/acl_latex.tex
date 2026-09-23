@@ -46,7 +46,7 @@
 %
 % and set <dim> to something 5cm or larger.
 
-\title{From Words to Images: Bangla Political Bias Detection via Multimodal Deep Learning with Cross-Attention and Fusion Strategies}
+\title{From Words to Images: A Multimodal Benchmark for Bangla Political Stance Detection}
 
 % Author information can be set in various styles:
 % For several authors from the same institution:
@@ -122,9 +122,9 @@ Detecting political bias in news is essential for understanding public discourse
 
 Political bias in news has become a critical challenge in the digital information ecosystem, influencing public opinion and democratic discourse. Detecting such bias is particularly important for low-resource languages like Bangla, where linguistic resources and annotated datasets remain limited. Although prior studies have shown progress in text-based political bias detection \citep{arman2025bengali, lia2025read} and multilingual multimodal frameworks \citep{bernard2025multimodal, thapa2025multimodal, mitra2026breaking}, several research gaps still exist. Notably, multimodal Bangla political bias datasets are scarce, fusion strategies for combining textual and visual features are underexplored, architectures jointly modeling sequential and visual representations are limited, and class-imbalance-aware loss functions are rarely utilized.
 
-To address these limitations, we propose a multimodal framework for Bangla political bias detection that integrates Bangla-BERT for textual encoding and Vision Transformer (ViT) for visual feature extraction. The framework evaluates multiple feature-level fusion strategies, including cross-attention, concatenation, factorized bilinear fusion, summation, and averaging. Furthermore, class-weighted focal loss is employed to handle label imbalance and improve minority class prediction. By leveraging transformer-based models and effective fusion mechanisms, the proposed approach captures complementary information from both modalities, enabling more robust bias detection in multimedia political content.
+To address these limitations, we present a reproducible benchmark for Bangla multimodal political stance detection. We evaluate seven text models (five fine-tuned transformers and two classical baselines) alongside six vision-language architectures (CLIP, ALIGN, BLIP, ViLT, FLAVA, and a CountVectorizer+ViT hybrid) under a single grouped stratified 5-fold cross-validation protocol. Class-weighted loss and text augmentation (applied only within training folds) handle label imbalance. By comparing text-only and multimodal models on the same data with the same evaluation protocol, we quantify how much---if any---visual information adds to headline-level stance classification in a low-resource setting.
 
-Our contributions of this work are threefold. First, we introduce a transformer-based multimodal framework for Bangla political bias detection. Second, we provide a comparative analysis of different fusion strategies and examine the effectiveness of class-weighted focal loss in addressing label imbalance. Third, we conduct a comprehensive benchmark evaluation using five-fold cross-validation, reporting accuracy, precision, recall, and F1-score, along with confusion matrices and ROC curves for interpretability. Overall, this study establishes a strong benchmark for multimodal Bangla bias detection and offers practical insights for extending multimodal bias detection to other low-resource languages, building upon prior English and multilingual studies \citep{bernard2025multimodal, thapa2025multimodal, mohiuddin2025memeguard}.
+Our contributions are threefold. First, we release a 198-item annotated headline--image dataset for Bangla political stance detection, the first multimodal resource for this task. Second, we benchmark 13 models---spanning classical ML, Bangla-specific and multilingual transformers, and five vision-language families---under a single grouped stratified 5-fold CV protocol with bootstrap confidence intervals, enabling fair comparison. Third, we show that no multimodal model reliably outperforms text-only baselines on this task at the current dataset size, and we quantify the contribution of Bangla tokenizer limitations, small image subsets, and decorative news photos to this gap. The dataset, code, and full experiment pipeline are publicly released to support future work on low-resource multimodal stance detection \citep{bernard2025multimodal, thapa2025multimodal, mohiuddin2025memeguard}.
 
 
 \section{Related Work}
@@ -144,12 +144,12 @@ Recent efforts have extended multimodal learning to low-resource settings. Mohiu
 Political bias detection has also been studied in cross-lingual and news contexts. Wang et al. \citep{wang2025mediabias} developed a real-time media bias detector for English news. Yang and Menczer \citep{yang2025llmcredibility} exposed systematic bias in LLM-based credibility assessments. Purohit et al. \citep{purohit2025mediasentiment}, Yenkikar et al. \citep{yenkikar2022sentinet}, and Ness et al. \citep{ness2023data} analyzed long-term media bias using deep learning methods. Studies by Afroze et al. \citep{afroze2026mulmosent} and Agrawal et al. \citep{agrawal2022hindi} further demonstrate the applicability of transformer models in low-resource and news domains.
 
 
-Overall, while multimodal and transformer methods perform well in high-resource languages, Bangla political bias detection remains underexplored. Prior work largely focuses on text-only analysis, English datasets, or simple fusion strategies. Our study addresses these gaps by introducing a cross-attention-based multimodal framework for Bangla, evaluating multiple fusion techniques, and using class-imbalance-aware loss functions for robust bias detection.
+Overall, while multimodal and transformer methods perform well in high-resource languages, Bangla political bias detection remains underexplored. Prior work largely focuses on text-only analysis, English datasets, or simple fusion strategies. Our study addresses these gaps by benchmarking both text-only and multimodal models on a new Bangla headline--image dataset under a single rigorous evaluation protocol, quantifying the contribution of visual information to stance classification in a low-resource setting.
 
 \section{Dataset Description}\label{sec:dataset}
 
 \subsection{Data Collection}
-We construct a multimodal Bangla political bias dataset comprising paired text--image news articles collected from major Bangla news platforms, including BBC Bangla, Prothom Alo, Jugantor, The Daily Star, Jago News, and Kaler Kantho. Each instance includes a headline, a corresponding image, publication metadata (date, source, and newspaper), and political bias annotations. The initial dataset contained 200 samples; after removing duplicates and visually redundant images, 198 instances remain. Each sample is labeled into one of three political bias categories: Govt Critique (0), Neutral (1), and Govt Leaning (2). The final dataset exhibits class imbalance, as summarized in Table~\ref{tab:class_distribution} and illustrated in Figure~\ref{fig:class_distribution}. Although the dataset provides a balanced representation of classes, its relatively small size (N=198) may limit the generalizability of deep learning models and increase the risk of overfitting.
+We construct a Bangla political stance dataset comprising news articles collected from major Bangla news platforms, including BBC Bangla, Prothom Alo, Jugantor, The Daily Star, Jago News, and Kaler Kantho. Each instance includes a headline, publication metadata (date, source, and newspaper), and political bias annotations; 86 of the 198 items also include a corresponding news image. The initial dataset contained 200 samples; after removing duplicates and visually redundant images, 198 instances remain. Each sample is labeled into one of three political bias categories: Govt Critique (0), Neutral (1), and Govt Leaning (2). The final dataset exhibits class imbalance, as summarized in Table~\ref{tab:class_distribution} and illustrated in Figure~\ref{fig:class_distribution}. The class imbalance (103/53/42) combined with the small size ($N{=}198$) limits the generalizability of deep learning models and increases the risk of overfitting, particularly for the minority govt\_leaning class.
 
 \begin{table}[H]
 \centering
@@ -198,7 +198,7 @@ For the visual modality, images smaller than $100 \times 100$ pixels are discard
 
 \section{Methodology}
 
-This study proposes a framework for Bangla political bias detection using textual, visual, and multimodal data. We evaluate classical ML models, transformer-based models, and six multimodal architectures with different fusion strategies and loss functions. Dataset construction and preprocessing are detailed in Section~\ref{sec:dataset} and class weights to handle label imbalance. The dataset is evaluated using stratified 5-fold cross-validation. No fixed train-test split is used.
+This study benchmarks text-only and multimodal models for Bangla political stance detection. We evaluate classical ML baselines, five transformer-based text models, six vision-language architectures, and six proposed fusion variants. Dataset construction and preprocessing are detailed in Section~\ref{sec:dataset}. Class weights handle label imbalance. All headline results use grouped stratified 5-fold cross-validation with no fixed train-test split.
 
 \subsection{Text Classification Models}
 
@@ -319,7 +319,7 @@ Models were assessed using standard metrics: \textbf{Accuracy} for overall corre
 
 \section{Result Analysis}
 
-In this section, we present the performance of all evaluated models across textual, visual, multimodal, and proposed approaches. The superior performance of traditional machine learning models, particularly Logistic Regression, suggests that simpler models are more effective for smaller datasets. In contrast, deep learning models such as LSTM and CNN require larger datasets to fully capture complex patterns and thus may underperform in low-resource settings.
+In this section, we present the performance of all evaluated models across textual, visual, multimodal, and proposed approaches. All headline results (Tables~\ref{tab:text_models} and~\ref{tab:multimodal_models}) come from the unified 5-fold CV protocol; Tables~\ref{tab:ml_models},~\ref{tab:image_models}, and~\ref{tab:proposed_models_compact} report preliminary single-split numbers from an earlier evaluation and are not directly comparable.
 
 \subsection{Text-Based Models}
 
