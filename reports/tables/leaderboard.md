@@ -23,6 +23,7 @@ pooled figure rests on folds that disagree.
 | mbert | 5-fold CV | all items | 198 | 0.520 | 0.498 | 0.421–0.568 | 0.496 ± 0.087 |  |
 | BanglaELECTRA | published | — | 47 | 0.468 | 0.462 | 0.308–0.596 | — | test set is 47 items; differences smaller than the CI width are not meaningful |
 | ViLT | published | — | 30 | 0.467 | 0.452 | 0.270–0.631 | — | test set is 30 items; differences smaller than the CI width are not meaningful |
+| countvec_vit | 5-fold CV | items with an image | 86 | 0.465 | 0.431 | 0.312–0.543 | 0.406 ± 0.093 | test set is 86 items; differences smaller than the CI width are not meaningful |
 | ALIGN | published | — | 30 | 0.600 | 0.423 | 0.268–0.543 | — | test set is 30 items; differences smaller than the CI width are not meaningful |
 | xlmr | 5-fold CV | all items | 198 | 0.424 | 0.421 | 0.349–0.488 | 0.350 ± 0.144 |  |
 | BLIP | published | — | 30 | 0.467 | 0.415 | 0.240–0.583 | — | test set is 30 items; differences smaller than the CI width are not meaningful |
@@ -30,6 +31,8 @@ pooled figure rests on folds that disagree.
 | CLIP | published | — | 30 | 0.433 | 0.386 | 0.209–0.573 | — | test set is 30 items; differences smaller than the CI width are not meaningful |
 | bangla_electra | 5-fold CV | all items | 198 | 0.374 | 0.372 | 0.308–0.436 | 0.333 ± 0.047 |  |
 | mt5 | 5-fold CV | all items | 198 | 0.485 | 0.367 | 0.305–0.429 | 0.341 ± 0.072 |  |
+| vilt | 5-fold CV | items with an image | 86 | 0.372 | 0.336 | 0.238–0.433 | 0.242 ± 0.149 | test set is 86 items; differences smaller than the CI width are not meaningful |
+| flava | 5-fold CV | items with an image | 86 | 0.395 | 0.297 | 0.222–0.368 | 0.232 ± 0.051 | test set is 86 items; differences smaller than the CI width are not meaningful |
 | CountVec_ViT | published | — | 30 | 0.300 | 0.281 | 0.129–0.438 | — | test set is 30 items; differences smaller than the CI width are not meaningful |
 | majority | 5-fold CV | all items | 198 | 0.520 | 0.228 | 0.207–0.248 | 0.228 ± 0.002 | model predicted a single class for every item (degenerate) |
 | XLMRoBERTa | published | — | 47 | 0.362 | 0.215 | 0.136–0.300 | — | test set is 47 items; differences smaller than the CI width are not meaningful |
