@@ -89,7 +89,10 @@ def evaluate_published(raw: Path = RAW) -> pd.DataFrame:
                 "notes": "; ".join(scores.notes),
             }
         )
-    return pd.DataFrame(rows).sort_values("macro_f1", ascending=False).reset_index(drop=True)
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return df
+    return df.sort_values("macro_f1", ascending=False).reset_index(drop=True)
 
 
 def collect_cv_runs(runs_dir: Path | str = EXPERIMENTS) -> pd.DataFrame:
