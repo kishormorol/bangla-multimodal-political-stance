@@ -52,11 +52,16 @@ def clip_like(cfg: ExperimentConfig):
         def forward(
             self, input_ids=None, attention_mask=None, pixel_values=None, labels=None, **kw
         ):
-            text_features = self.backbone.get_text_features(
+            text_out = self.backbone.get_text_features(
                 input_ids=input_ids, attention_mask=attention_mask
             )
-            image_features = self.backbone.get_image_features(pixel_values=pixel_values)
-            return self.head(text_features, image_features)
+            image_out = self.backbone.get_image_features(pixel_values=pixel_values)
+            # Newer transformers may return ModelOutput instead of a plain tensor.
+            if not isinstance(text_out, torch.Tensor):
+                text_out = text_out.pooler_output if hasattr(text_out, "pooler_output") and text_out.pooler_output is not None else text_out.last_hidden_state[:, 0]
+            if not isinstance(image_out, torch.Tensor):
+                image_out = image_out.pooler_output if hasattr(image_out, "pooler_output") and image_out.pooler_output is not None else image_out.last_hidden_state[:, 0]
+            return self.head(text_out, image_out)
 
     return DualEncoderClassifier(), processor
 
@@ -90,10 +95,15 @@ def fusion_encoder(cfg: ExperimentConfig):
             outputs = self.backbone(**inputs)
             pooled = getattr(outputs, "pooler_output", None)
             if pooled is None:
-                state = getattr(outputs, "multimodal_embeddings", None)
-                if state is None:
-                    state = outputs.last_hidden_state
-                pooled = state[:, 0]
+                # BLIP returns BlipOutput — extract [CLS] from the text sub-model.
+                text_out = getattr(outputs, "text_model_output", None)
+                if text_out is not None:
+                    pooled = text_out.last_hidden_state[:, 0]
+                else:
+                    state = getattr(outputs, "multimodal_embeddings", None)
+                    if state is None:
+                        state = outputs.last_hidden_state
+                    pooled = state[:, 0]
             return {"logits": self.classifier(self.dropout(pooled))}
 
     return FusedClassifier(), processor
