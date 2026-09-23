@@ -1,0 +1,17 @@
+# Ablation: BLIP with unfrozen encoder (full fine-tuning).
+# Compare with configs/multimodal/blip.yaml (freeze_encoder: true) to measure
+# the effect of fine-tuning the backbone on this small corpus.
+name: blip_unfrozen
+modality: multimodal
+family: fusion_encoder
+pretrained: Salesforce/blip-itm-base-coco
+num_labels: 3
+epochs: 10
+batch_size: 8
+learning_rate: 1.0e-5   # lower LR for full fine-tuning to avoid catastrophic forgetting
+max_length: 128
+image_size: 384
+freeze_encoder: false
+class_weights: true
+early_stopping_patience: 3
+seed: 42

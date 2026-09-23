@@ -165,6 +165,24 @@ def significance(
     )
 
 
+@app.command("error-analysis")
+def error_analysis(
+    runs: Path = typer.Option(EXPERIMENTS, "--runs"),
+    out: Path = typer.Option(TABLES, "--out"),
+) -> None:
+    """Error analysis: confusion matrices, hardest items, outlet & length bias."""
+    from bmpb.error_analysis import run_error_analysis
+    from bmpb.paths import FIGURES
+
+    result = run_error_analysis(runs, out, FIGURES)
+    console.print(
+        f"[green]{result['models']}[/] models analysed, "
+        f"[bold]{result['hardest_items']}[/] hardest items identified"
+    )
+    console.print(f"  report: {result['md_report']}")
+    console.print(f"  figures: {result['outlet_chart']}, {result['length_chart']}")
+
+
 @app.command()
 def models() -> None:
     """List the registered model families and the configs that use them."""

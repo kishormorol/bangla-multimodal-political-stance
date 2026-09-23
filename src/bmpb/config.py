@@ -88,6 +88,7 @@ class ExperimentConfig:
     fp16: bool = False
     early_stopping_patience: int | None = 2
     class_weights: bool = True
+    augment: bool = True  # attach published augmentations to training folds
     params: dict[str, Any] = field(default_factory=dict)  # family-specific extras
 
     @classmethod

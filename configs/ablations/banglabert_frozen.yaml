@@ -1,0 +1,16 @@
+# Ablation: BanglaBERT with frozen encoder (head-only training).
+# Compare with configs/text/banglabert.yaml (freeze_encoder: false, the default)
+# to measure the value of fine-tuning the transformer backbone.
+name: banglabert_frozen
+modality: text
+family: hf_text_classifier
+pretrained: csebuetnlp/banglabert
+num_labels: 3
+epochs: 8
+batch_size: 16
+learning_rate: 1.0e-4   # higher LR for head-only training
+max_length: 256
+class_weights: true
+freeze_encoder: true
+early_stopping_patience: 3
+seed: 42

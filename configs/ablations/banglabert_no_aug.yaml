@@ -1,0 +1,15 @@
+# Ablation: BanglaBERT without training-fold augmentation.
+# Compare with configs/text/banglabert.yaml to measure the augmentation effect.
+name: banglabert_no_aug
+modality: text
+family: hf_text_classifier
+pretrained: csebuetnlp/banglabert
+num_labels: 3
+epochs: 8
+batch_size: 16
+learning_rate: 2.0e-5
+max_length: 256
+class_weights: true
+early_stopping_patience: 3
+augment: false
+seed: 42

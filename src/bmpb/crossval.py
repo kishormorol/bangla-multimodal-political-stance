@@ -127,7 +127,7 @@ def cross_validate(
         group_key=data_cfg.split.get("group_key", "source_index"),
         seed=cfg.seed,
     )
-    augmentations = load_published_augmentations(corpus)
+    augmentations = load_published_augmentations(corpus) if cfg.augment else pd.DataFrame()
 
     started = time.time()
     per_fold: list[dict] = []
@@ -205,7 +205,7 @@ def cross_validate(
         "modality": cfg.modality,
         "family": cfg.family,
         "pretrained": cfg.pretrained,
-        "protocol": f"grouped stratified {n_splits}-fold CV, augmentation inside training folds",
+        "protocol": f"grouped stratified {n_splits}-fold CV, {'augmentation inside training folds' if cfg.augment else 'no augmentation'}",
         "population": population,
         "items_scored": int(len(predictions)),
         "seed": cfg.seed,
