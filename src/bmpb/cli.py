@@ -151,6 +151,21 @@ def leaderboard(
 
 
 @app.command()
+def significance(
+    runs: Path = typer.Option(EXPERIMENTS, "--runs"),
+    out: Path = typer.Option(TABLES, "--out"),
+) -> None:
+    """Pairwise significance tests (McNemar + paired bootstrap) between CV runs."""
+    from bmpb.significance import run_significance
+
+    frame = run_significance(runs, out)
+    n_sig = int(frame["boot_sig"].sum()) if len(frame) else 0
+    console.print(
+        f"[green]{len(frame)}[/] pairs tested, [bold]{n_sig}[/] significant (p<0.05)"
+    )
+
+
+@app.command()
 def models() -> None:
     """List the registered model families and the configs that use them."""
     from bmpb.models.registry import available
