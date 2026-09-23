@@ -114,7 +114,7 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-Detecting political bias in news is essential for understanding public discourse and combating misinformation. In this paper, we introduce a multimodal deep learning architecture for Bangla political bias detection that leverages textual embeddings from Bangla-BERT and visual embeddings from ViT with a cross-attention-based fusion approach. Other fusion approaches, such as concatenation, summation, averaging, and multimodal factorized bilinear (MFB) fusion, are also considered. We curated a Bangla political dataset with paired images and texts labeled for bias. Experiments with stratified 5-fold cross-validation show that the cross-attention hybrid model outperforms other fusion techniques, achieving an accuracy of 63.2\%. Our results highlight the effectiveness of cross-attention in fusing heterogeneous modalities, establishing a benchmark for Bangla multimodal political bias detection. The cross-attention mechanism provides insights into the interaction between textual and visual modalities, highlighting potential areas where alignment between modalities may be improved.
+Detecting political bias in news is essential for understanding public discourse and combating misinformation. We present a multimodal benchmark for Bangla political stance detection comprising 198 annotated headline--image pairs from six major Bangla outlets, labeled as government-critical, neutral, or government-leaning. All models---text-only transformers, classical baselines, and five vision-language architectures---are evaluated under a single grouped stratified 5-fold cross-validation protocol with augmentation confined to training folds and pooled out-of-fold scoring, making every number in the comparison mutually comparable. BanglaBERT leads text models (macro-F1 0.533, 95\% CI 0.458--0.606) while CLIP is the strongest multimodal model (0.516, 0.396--0.627), despite having no Bangla pretraining. All multimodal models are hampered by the small image subset ($n{=}86$) and the fact that none were pretrained on Bangla; the wide confidence intervals confirm that apparent ranking differences are not yet statistically reliable. The dataset, code, and reproducible experiment pipeline are publicly released to support future work on low-resource multimodal stance detection.
 \end{abstract}
 
 
@@ -230,16 +230,18 @@ We propose six multimodal models that combine textual and visual features to det
 \begin{table*}[t]
 \footnotesize
 \centering
-\caption{Performance of Transformer-Based Text Models}
-\begin{tabular}{|l|c|c|c|c|c|}
+\caption{Performance of text models under grouped stratified 5-fold CV ($n{=}198$). Macro-F1 is the headline metric; the 95\% interval is a 2000-round item bootstrap over pooled out-of-fold predictions. Per-fold is the mean $\pm$ standard deviation across folds.}
+\begin{tabular}{|l|c|c|c|c|c|c|}
 \hline
-\textbf{Model} & \textbf{Accuracy} & \textbf{Error Rate} & \textbf{Precision} & \textbf{Recall} & \textbf{F1 Score} \\
+\textbf{Model} & \textbf{Accuracy} & \textbf{Macro-F1} & \textbf{95\% CI} & \textbf{Per-fold} & \textbf{F1\textsubscript{gc}} & \textbf{F1\textsubscript{gl}} \\
 \hline
-BanglaBERT & 0.723 & 0.277 & 0.719 & 0.728 & 0.719 \\
-Bangla-ELECTRA & 0.468 & 0.532 & 0.468 & 0.465 & 0.462 \\
-mBERT & 0.638 & 0.362 & 0.673 & 0.639 & 0.649 \\
-XLM-RoBERTa & 0.362 & 0.638 & 0.232 & 0.356 & 0.215 \\
-mT5 & 0.319 & 0.681 & 0.106 & 0.333 & 0.161 \\
+BanglaBERT        & 0.576 & \textbf{0.533} & 0.458--0.606 & 0.522 $\pm$ 0.062 & 0.661 & 0.482 \\
+TF-IDF + LogReg   & 0.551 & 0.501 & 0.429--0.572 & 0.490 $\pm$ 0.091 & 0.654 & 0.354 \\
+mBERT             & 0.520 & 0.498 & 0.421--0.568 & 0.496 $\pm$ 0.087 & 0.593 & 0.427 \\
+mT5               & 0.520 & 0.497 & 0.427--0.569 & 0.481 $\pm$ 0.078 & 0.591 & 0.470 \\
+XLM-RoBERTa       & 0.424 & 0.421 & 0.349--0.488 & 0.350 $\pm$ 0.144 & 0.456 & 0.414 \\
+Bangla-ELECTRA    & 0.374 & 0.372 & 0.308--0.436 & 0.333 $\pm$ 0.047 & 0.219 & 0.438 \\
+Majority baseline & 0.520 & 0.228 & 0.207--0.248 & 0.228 $\pm$ 0.002 & 0.684 & 0.000 \\
 \hline
 \end{tabular}
 \label{tab:text_models}
@@ -267,7 +269,7 @@ In this hybrid approach, textual features are extracted using CountVectorizer, w
 
 \subsection{Experimental Setup}
 
-All experiments were conducted on Google Colab equipped with a NVIDIA Tesla T4 GPU and 16 GB of RAM. Deep learning models were implemented using PyTorch, while classical machine learning models were developed using scikit-learn. The HuggingFace Transformers library was used for fine-tuning pre-trained textual and multimodal transformer models. To ensure robust evaluation, we employ 5-fold cross-validation. The dataset is divided into five subsets, where in each iteration, four folds are used for training and one fold for testing. The final performance is reported as the average across all folds. We report the mean performance across folds, and standard deviation is considered to assess model stability. To mitigate overfitting, we incorporate regularization techniques including dropout layers (with a rate of 0.3–0.5) and early stopping based on validation loss. Additionally, model performance is monitored across training epochs to ensure generalization.
+All experiments were conducted on Google Colab with an NVIDIA Tesla T4 GPU (16~GB VRAM). Models were implemented using PyTorch, scikit-learn, and HuggingFace Transformers. We employ \textbf{grouped stratified 5-fold cross-validation}: folds are cut on the source article so augmented variants never leak across the train/test boundary, augmentation is applied inside each training fold after the split, and every item is predicted exactly once by the fold that did not train on it. The pooled out-of-fold predictions are scored with macro-F1 and a 2000-round item bootstrap 95\% confidence interval. Per-fold mean $\pm$ standard deviation is reported alongside to flag unstable models. Multimodal models are evaluated only on the 86-item subset that has images; text models on all 198 items. Early stopping (patience 3) is used for transformer models. Encoder backbones are frozen for multimodal models; only the classification head is trained.
 
 
 \begin{table*}[h]
@@ -325,7 +327,7 @@ For text-based analysis, we applied both transformer-based and classical machine
 
 \subsubsection{Comparison of Transformer Models}
 
-Table~\ref{tab:text_models} shows the performance of transformer models. BanglaBERT achieves the highest accuracy (0.723) and balanced precision-recall, indicating strong capability in capturing Bangla-specific textual features. mBERT performs moderately due to multilingual training, while XLM-RoBERTa and mT5 perform poorly, likely due to insufficient adaptation to Bangla. Figure~\ref{fig:transformer_comparison} shows a visual comparison of all transformer models.  
+Table~\ref{tab:text_models} shows the performance of text models under 5-fold CV. BanglaBERT achieves the highest macro-F1 (0.533, CI 0.458--0.606), consistent with its Bangla-specific pretraining. A simple TF-IDF + Logistic Regression baseline (0.501) is competitive, suggesting that the short headlines (median 8 words) carry most of the signal in lexical form. mBERT and mT5 perform comparably (0.498, 0.497), while XLM-RoBERTa and Bangla-ELECTRA lag behind. The majority baseline (0.228) confirms that the task is non-trivial despite the class imbalance. Figure~\ref{fig:transformer_comparison} shows a visual comparison of all text models.  
 
 
 \begin{figure}[h]
@@ -337,7 +339,7 @@ Table~\ref{tab:text_models} shows the performance of transformer models. BanglaB
 
 \subsubsection{Comparison of Classical ML Models}
 
-Table~\ref{tab:ml_models} presents the performance of classical ML models trained on bag-of-words features. SVM achieves the highest accuracy (0.746), followed by Logistic Regression and Decision Tree (0.73). KNN performs the worst (0.46). Figure~\ref{fig:ml_comparison} shows a visual comparison of all classical ML models.  
+Table~\ref{tab:ml_models} presents preliminary results of classical ML models from a single train-test split of augmented data. These numbers are \textbf{not directly comparable} to the 5-fold CV results; the TF-IDF + Logistic Regression baseline in Table~\ref{tab:text_models} (macro-F1 0.501) is the CV-validated classical baseline. Figure~\ref{fig:ml_comparison} shows a visual comparison of all classical ML models.  
 
 \begin{figure}[h]
     \centering
@@ -348,22 +350,23 @@ Table~\ref{tab:ml_models} presents the performance of classical ML models traine
 
 \subsection{Image-Based Models}
 
-Table~\ref{tab:image_models} presents the performance of image-based models. ViT achieves the highest accuracy (0.497), demonstrating the advantage of attention-based architectures for visual feature extraction. Figure~\ref{fig:image_comparison} visually compares all image models.  
+Table~\ref{tab:image_models} presents preliminary results of image-only models from a single-split evaluation. These are \textbf{not directly comparable} to the CV results. ViT achieves the highest accuracy (0.497) among image-only models. Figure~\ref{fig:image_comparison} visually compares all image models.  
 
 
 \begin{table*}[h]
 \footnotesize
 \centering
-\caption{Performance of Baseline Multimodal Models}
-\begin{tabular}{|l|c|c|c|c|c|}
+\caption{Performance of multimodal models under grouped stratified 5-fold CV ($n{=}86$, items with an image). All confidence intervals are wide due to the small evaluation set; ranking differences are not statistically meaningful.}
+\begin{tabular}{|l|l|c|c|c|c|c|c|}
 \hline
-\textbf{Model} & \textbf{Accuracy} & \textbf{Error Rate} & \textbf{Precision} & \textbf{Recall} & \textbf{F1 Score} \\
+\textbf{Model} & \textbf{Family} & \textbf{Accuracy} & \textbf{Macro-F1} & \textbf{95\% CI} & \textbf{Per-fold} & \textbf{F1\textsubscript{gc}} & \textbf{F1\textsubscript{gl}} \\
 \hline
-CLIP & 0.433 & 0.567 & 0.492 & 0.433 & 0.422 \\
-BLIP & 0.467 & 0.533 & 0.464 & 0.467 & 0.447 \\
-ALIGN & 0.6 & 0.4 & 0.457 & 0.6 & 0.511 \\
-ViLT & 0.467 & 0.533 & 0.556 & 0.467 & 0.486 \\
-FLAVA & 0.433 & 0.567 & 0.474 & 0.433 & 0.432 \\
+CLIP          & dual encoder  & 0.616 & \textbf{0.516} & 0.396--0.627 & 0.499 $\pm$ 0.163 & 0.712 & 0.273 \\
+CountVec+ViT  & hybrid (SVM)  & 0.465 & 0.431 & 0.312--0.543 & 0.406 $\pm$ 0.093 & 0.543 & 0.333 \\
+ALIGN         & dual encoder  & 0.419 & 0.407 & 0.294--0.510 & 0.376 $\pm$ 0.049 & 0.471 & 0.318 \\
+BLIP          & fusion enc.   & 0.430 & 0.366 & 0.268--0.464 & 0.326 $\pm$ 0.043 & 0.545 & 0.121 \\
+ViLT          & fusion enc.   & 0.372 & 0.336 & 0.238--0.433 & 0.242 $\pm$ 0.149 & 0.506 & 0.205 \\
+FLAVA         & fusion enc.   & 0.395 & 0.297 & 0.222--0.368 & 0.232 $\pm$ 0.051 & 0.541 & 0.000 \\
 \hline
 \end{tabular}
 \label{tab:multimodal_models}
@@ -401,7 +404,7 @@ Proposed Model 6 & 0.4630 & 0.5370 & 0.4728 & 0.4630 & 0.4547 \\
 
 \subsection{Baseline Multimodal Models}
 
-Table~\ref{tab:multimodal_models} shows baseline multimodal models. ALIGN achieves the highest accuracy (0.6), showing effective fusion of textual and visual features. Figure~\ref{fig:multimodal_comparison} illustrates the comparison.  
+Table~\ref{tab:multimodal_models} shows multimodal models evaluated on the 86-item image subset. CLIP leads with macro-F1 0.516 (CI 0.396--0.627), followed by CountVec+ViT (0.431) and ALIGN (0.407). Dual-encoder models (CLIP, ALIGN) outperform fusion-encoder models (BLIP, ViLT, FLAVA), likely because the frozen dual-encoder architecture is more robust with a small training set. However, all confidence intervals overlap substantially, so ranking differences are not statistically reliable at this sample size. FLAVA's govt\_leaning F1 of 0.000 indicates complete failure on the smallest class. Figure~\ref{fig:multimodal_comparison} illustrates the comparison.  
 
 \begin{figure}[h]
     \centering
@@ -413,7 +416,7 @@ Table~\ref{tab:multimodal_models} shows baseline multimodal models. ALIGN achiev
 
 \subsection{Proposed Multimodal Models}
 
-Table~\ref{tab:proposed_models_compact} presents our six proposed multimodal models. Cross-attention-based fusion (P1) achieves the highest accuracy (0.6315), surpassing the best baseline model (ALIGN: 0.6). Figure~\ref{fig:proposed_comparison} visually compares all six proposed models.  
+Table~\ref{tab:proposed_models_compact} presents our six proposed multimodal fusion models from a preliminary single-split evaluation. These results are \textbf{not directly comparable} to the 5-fold CV results in Tables~\ref{tab:text_models} and~\ref{tab:multimodal_models}, as they use a different evaluation protocol. We include them for completeness while the unified CV evaluation of these architectures is in progress. Figure~\ref{fig:proposed_comparison} visually compares all six proposed models.  
 
 \begin{figure}[h]
     \centering
@@ -425,25 +428,29 @@ Table~\ref{tab:proposed_models_compact} presents our six proposed multimodal mod
 
 \subsection{Analysis of Multimodal vs Text-Only Performance}
 
-ext-only models, such as SVM and BanglaBERT, outperform the proposed multimodal models mainly because the dataset is text-dominant, where sentiment and bias are more clearly expressed in text than in images. Additionally, the relatively small dataset limits the ability of multimodal models to learn effective cross-modal interactions, as these models typically require large-scale data. The visual modality may also contain noisy or weak signals, reducing its contribution to classification. These results indicate that multimodal models do not always ensure better performance, especially in small-scale or text-focused datasets.
-
-Due to computational constraints, standard deviation values are not reported and will be included in future work.
+Text-only models evaluated on all 198 items and multimodal models evaluated on the 86-item image subset are not directly comparable due to different population sizes. However, the best text model (BanglaBERT, F1 0.533 on 198 items) and the best multimodal model (CLIP, F1 0.516 on 86 items) achieve similar headline scores. The multimodal models face three compounding disadvantages: (1) none were pretrained on Bangla, so the text stream is near-useless for CLIP/ALIGN whose tokenizers shred Bangla into byte fragments; (2) the image subset is small ($n{=}86$), limiting what can be learned from visual features; and (3) news photos are often decorative rather than stance-bearing, providing weak signal for the classification task.
 
 
 \subsection{Discussion}
 
-The proposed models outperform baseline multimodal architectures by effectively integrating Bangla-specific textual features with visual embeddings. Proposed Model P1 (Hybrid Feature-Level Cross-Attention with Cross-Entropy Loss) achieves the highest accuracy (0.6315), surpassing ALIGN (0.6). Cross-attention allows better alignment of complementary text and image information. Models using simple concatenation, summation, or averaging achieve moderate performance, highlighting the importance of attention-driven fusion. Focal Loss in P2-–P5 improves minority class representation, but cross-attention remains the most effective strategy for Bangla political bias detection. This observation is consistent with prior findings that unimodal text models can outperform multimodal systems in low-resource scenarios. Error analysis reveals that misclassifications often occur in samples with ambiguous or context-dependent expressions. This indicates the need for more context-aware models and larger annotated datasets for improved performance.
+Under the unified 5-fold CV protocol, BanglaBERT is the strongest overall model (macro-F1 0.533), while CLIP leads multimodal models (0.516) despite lacking Bangla pretraining. The dual-encoder architecture (CLIP, ALIGN) consistently outperforms fusion encoders (BLIP, ViLT, FLAVA), likely because frozen dual encoders are more parameter-efficient for small datasets. Notably, a simple TF-IDF + Logistic Regression baseline (0.501) is competitive with fine-tuned transformers, suggesting that the short headlines carry most stance signal in surface-level lexical cues.
+
+All multimodal models struggle with the govt\_leaning class (F1 0.000--0.333), which has the fewest examples (42 items, 18 with images). FLAVA fails to predict this class entirely. The wide confidence intervals (often spanning 20+ points) and high per-fold standard deviations (CLIP: 0.163, ViLT: 0.149) confirm that the current dataset size is insufficient for reliable ranking of individual models, though the aggregate finding---that text models match or exceed multimodal ones---is robust.
+
+Error analysis reveals that misclassifications cluster in samples with ambiguous or context-dependent expressions. Government-critical headlines are the easiest to classify (F1 0.46--0.71 across models), likely because they use distinctive protest and accountability vocabulary. This observation is consistent with prior findings that unimodal text models can outperform multimodal systems in low-resource scenarios \citep{thapa2025multimodal}.
 
 
 
 \section{Conclusion and Future Work}
-In this work, we presented a multimodal deep learning framework for detecting political bias in Bangla news content, leveraging both textual and visual information. By exploring various fusion strategies, including cross-attention, concatenation, summation, averaging, and MFB, we demonstrated that cross-attention-based fusion most effectively captures the inter-modal relationships, achieving an accuracy of 63.2\%. Our study highlights the potential of multimodal approaches for political bias detection and underscores the limitations of existing alignment systems in capturing nuanced biases across text and images. Despite promising results, the study is limited by dataset size and the absence of large-scale multimodal benchmarks, which may affect the generalizability of the findings. For future work, we aim to expand the dataset with more diverse political content and additional modalities such as audio and video. We also plan to explore self-supervised pretraining for multimodal alignment, explainable AI techniques to interpret model decisions. It will focus on expanding the dataset, incorporating transformer-based multimodal architectures, and conducting more extensive evaluations on diverse real-world datasets.
+We presented a reproducible benchmark for Bangla multimodal political stance detection, evaluating 7 text models and 6 vision-language architectures under a single grouped stratified 5-fold CV protocol. BanglaBERT leads text models (macro-F1 0.533) while CLIP is the strongest multimodal model (0.516), despite lacking Bangla pretraining. The key finding is that none of the multimodal models reliably outperform text-only baselines on this task, and all confidence intervals are too wide for definitive model ranking at the current dataset size ($n{=}198$ text, $n{=}86$ with images).
+
+The study is limited by dataset size, the absence of Bangla-pretrained vision-language models, and the decorative nature of many news photos. For future work, we aim to (1) expand the annotated corpus to 500+ items with denser image coverage, (2) add zero-shot LLM baselines (Claude, GPT-4) for calibration, (3) explore Bangla-adapted vision-language pretraining, and (4) investigate whether article body text (rather than headlines alone) improves stance signal.
 
 
 
 \section*{Limitations}
 
-Our study is limited by the small dataset size and residual class imbalance, which may affect model generalization. Visual data lacks augmentation, and some multilingual transformers underperform on Bangla-specific text. Additionally, current multimodal fusion may not capture all nuanced text-image interactions. Future work should explore larger datasets, improved augmentation, and advanced fusion strategies. Fine-tuning large transformer-based multimodal models on such a small dataset may lead to high variance and unstable performance.
+The dataset contains only 198 items (86 with images), producing wide confidence intervals that prevent reliable model ranking. Class imbalance (103/53/42) particularly affects the govt\_leaning class, where several models achieve F1 of 0.000. No existing vision-language model has Bangla pretraining, so the text stream of CLIP/ALIGN is near-useless---the comparison measures the image encoder's contribution rather than true multimodal understanding. Text augmentation is applied only to the textual modality, which may give text-only models an unfair advantage. The text field is headlines (median 8 words), not full articles, which limits the complexity of stance signals available to the models.
 
 
 
