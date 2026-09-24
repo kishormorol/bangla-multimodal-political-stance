@@ -189,12 +189,9 @@ To address class imbalance, text-only data augmentation is applied to minority c
 For the visual modality, images smaller than $100 \times 100$ pixels are discarded, and all remaining images are converted to RGB format. Near-duplicate images are removed using perceptual hashing (pHash). Images are then resized with aspect ratio preservation and padded to $256 \times 256$ pixels for compatibility with the Vision Transformer (ViT). No image augmentation is applied; instead, class imbalance is handled during training using class-weighted loss functions to avoid introducing artificial visual artifacts.
 
 
-\begin{figure*}[h]
-    \centering
-    \includegraphics[width=1\linewidth]{method1.png}
-    \caption{Overview of the benchmark pipeline for Bangla political stance detection.}
-    \label{fig:multimodal_pipeline}
-\end{figure*}
+% Figure removed: method1.png includes "Proposed Model Architecture" diagram
+% that contradicts the benchmark framing. Re-add with a cropped version showing
+% only the pipeline overview if space permits.
 
 
 \section{Methodology}
