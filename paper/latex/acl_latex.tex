@@ -8,10 +8,8 @@
 \usepackage{times}
 \usepackage{latexsym}
 
-\usepackage{polyglossia}
-
-\setotherlanguage{bengali}
-\newfontfamily\bengalifont[Script=Bengali]{Noto Serif Bengali}
+% polyglossia removed — requires XeLaTeX; pdflatex (Overleaf default) is used instead.
+% Bengali script examples appear in the supplementary material, not the paper body.
 
 \usepackage{array}
 \usepackage{float}
@@ -140,7 +138,7 @@ Text-only political bias and sentiment analysis in Bangla has received increasin
 \subsection{Multimodal Approaches in Low-Resource Languages}
 Recent efforts have extended multimodal learning to low-resource settings. Mohiuddin et al. \citep{mohiuddin2025memeguard} introduced MemeGuard, a Bengali multimodal propaganda dataset, demonstrating improved performance through adaptive fusion of BanglaBERT and CLIP. Afroze et al. \citep{afroze2026mulmosent} proposed MulMoSenT, employing cross-attention between text and images for sentiment analysis in low-resource languages. Vu \citep{vu2017politicalbias} explored early MLP-based political bias detection using word embeddings. 
 
-\subsection{Cross-Language and news Bias Analysis}
+\subsection{Cross-Language and News Bias Analysis}
 Political bias detection has also been studied in cross-lingual and news contexts. Wang et al. \citep{wang2025mediabias} developed a real-time media bias detector for English news. Yang and Menczer \citep{yang2025llmcredibility} exposed systematic bias in LLM-based credibility assessments. Purohit et al. \citep{purohit2025mediasentiment}, Yenkikar et al. \citep{yenkikar2022sentinet}, and Ness et al. \citep{ness2023data} analyzed long-term media bias using deep learning methods. Studies by Afroze et al. \citep{afroze2026mulmosent} and Agrawal et al. \citep{agrawal2022hindi} further demonstrate the applicability of transformer models in low-resource and news domains.
 
 
@@ -391,6 +389,10 @@ The dataset contains only 198 items (86 with images), producing wide confidence 
 
 
 
+
+\section*{Ethics Statement}
+
+This work involves classifying the political stance of publicly available news headlines. The labels (government-critical, neutral, government-leaning) describe \emph{framing}, not factual accuracy or normative judgment. We do not claim that any stance category is inherently preferable. The dataset consists of headlines already published by major news outlets and does not contain private or sensitive personal information. Annotation was performed by the authors; we acknowledge that political stance is inherently subjective and that inter-annotator agreement, which we have not yet measured, is a limitation. Automated stance classifiers could potentially be misused for censorship or targeted suppression of political speech; we release the data and code for research purposes only and caution against deployment in content moderation systems without careful consideration of fairness, transparency, and local context.
 
 % Bibliography entries for the entire Anthology, followed by custom entries
 %\bibliography{anthology,custom}
