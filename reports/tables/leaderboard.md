@@ -16,14 +16,15 @@ pooled figure rests on folds that disagree.
 
 | Model | Protocol | Population | n | Accuracy | Macro-F1 | 95% CI | Per-fold | Notes |
 | --- | --- | --- | ---: | ---: | ---: | --- | --- | --- |
+| gemini_zeroshot | this repo | — | 6 | 0.833 | 0.829 | 0.400–1.000 | — | zero-shot, no fine-tuning or examples provided |
 | BanglaBERT | published | — | 47 | 0.723 | 0.719 | 0.578–0.836 | — | test set is 47 items; differences smaller than the CI width are not meaningful |
 | mBERT | published | — | 47 | 0.638 | 0.649 | 0.509–0.775 | — | test set is 47 items; differences smaller than the CI width are not meaningful |
 | clip_unfrozen | 5-fold CV | items with an image | 86 | 0.605 | 0.541 | 0.420–0.649 | 0.516 ± 0.138 | test set is 86 items; differences smaller than the CI width are not meaningful |
 | banglabert | 5-fold CV | all items | 198 | 0.576 | 0.533 | 0.458–0.606 | 0.522 ± 0.062 |  |
 | banglabert_no_aug | 5-fold CV | all items | 198 | 0.576 | 0.533 | 0.458–0.606 | 0.522 ± 0.062 |  |
 | clip | 5-fold CV | items with an image | 86 | 0.616 | 0.516 | 0.396–0.627 | 0.499 ± 0.163 | test set is 86 items; differences smaller than the CI width are not meaningful |
-| tfidf_logreg | 5-fold CV | all items | 198 | 0.551 | 0.501 | 0.429–0.572 | 0.490 ± 0.091 |  |
 | tfidf_logreg_no_aug | 5-fold CV | all items | 198 | 0.551 | 0.501 | 0.429–0.572 | 0.490 ± 0.091 |  |
+| tfidf_logreg | 5-fold CV | all items | 198 | 0.551 | 0.501 | 0.429–0.572 | 0.490 ± 0.091 |  |
 | mbert | 5-fold CV | all items | 198 | 0.520 | 0.498 | 0.421–0.568 | 0.496 ± 0.087 |  |
 | align | 5-fold CV | items with an image | 86 | 0.488 | 0.482 | 0.374–0.581 | 0.470 ± 0.084 | test set is 86 items; differences smaller than the CI width are not meaningful |
 | qwen_zeroshot | this repo | — | 195 | 0.544 | 0.475 | 0.399–0.545 | — | zero-shot, no fine-tuning or examples provided |
