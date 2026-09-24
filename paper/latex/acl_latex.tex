@@ -464,6 +464,41 @@ We identify the items most models get wrong: 2 of 198 items are misclassified by
 
 Accuracy also varies by outlet: high-volume outlets like Prothom Alo (0.50), BBC Bangla (0.48), and Bangla Tribune (0.46) cluster near the mean, while several low-frequency outlets show extreme accuracy, likely due to single-item samples. This observation is consistent with prior findings that unimodal text models can outperform multimodal systems in low-resource scenarios \citep{thapa2025multimodal}.
 
+\subsubsection{Ablation Studies}
+
+Table~\ref{tab:ablations} isolates the contribution of augmentation and encoder fine-tuning.
+
+\begin{table}[h]
+\footnotesize
+\centering
+\caption{Ablation results under 5-fold CV. Each row changes one variable from the corresponding baseline in Tables~\ref{tab:text_models}--\ref{tab:multimodal_models}.}
+\begin{tabular}{|l|l|c|c|}
+\hline
+\textbf{Model} & \textbf{Change} & \textbf{F1} & \textbf{$\Delta$} \\
+\hline
+BanglaBERT         & baseline          & 0.533 & --- \\
+BanglaBERT         & no augmentation   & 0.533 & 0.000 \\
+BanglaBERT         & frozen encoder    & 0.416 & $-$0.117 \\
+\hline
+TF-IDF + LogReg    & baseline          & 0.501 & --- \\
+TF-IDF + LogReg    & no augmentation   & 0.501 & 0.000 \\
+\hline
+CLIP               & baseline (frozen) & 0.516 & --- \\
+CLIP               & unfrozen          & \textbf{0.541} & +0.025 \\
+\hline
+BLIP               & baseline (frozen) & 0.366 & --- \\
+BLIP               & unfrozen          & 0.425 & +0.059 \\
+\hline
+\end{tabular}
+\label{tab:ablations}
+\end{table}
+
+\noindent\textbf{Augmentation has no measurable effect}: both BanglaBERT and TF-IDF + LogReg achieve identical macro-F1 with and without training-fold augmentation, suggesting that the 114 augmented headlines (synonym replacement, word swapping) do not add information beyond the 198 originals at this scale.
+
+\noindent\textbf{Encoder fine-tuning is critical for text models}: freezing BanglaBERT's encoder and training only the classification head drops macro-F1 by 0.117 (from 0.533 to 0.416), confirming that task-specific adaptation of the pretrained representations is essential for stance detection.
+
+\noindent\textbf{Unfreezing helps multimodal models}: CLIP improves from 0.516 to 0.541 and BLIP from 0.366 to 0.425 when the encoder is unfrozen, despite the small training set. This suggests that the frozen pretrained representations (trained on English) are poorly suited to Bangla content, and even limited fine-tuning on 86 items provides measurable benefit.
+
 
 
 \section{Conclusion and Future Work}
