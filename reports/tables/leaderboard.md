@@ -26,6 +26,7 @@ pooled figure rests on folds that disagree.
 | tfidf_logreg_no_aug | 5-fold CV | all items | 198 | 0.551 | 0.501 | 0.429–0.572 | 0.490 ± 0.091 |  |
 | mbert | 5-fold CV | all items | 198 | 0.520 | 0.498 | 0.421–0.568 | 0.496 ± 0.087 |  |
 | align | 5-fold CV | items with an image | 86 | 0.488 | 0.482 | 0.374–0.581 | 0.470 ± 0.084 | test set is 86 items; differences smaller than the CI width are not meaningful |
+| qwen_zeroshot | this repo | — | 195 | 0.544 | 0.475 | 0.399–0.545 | — | zero-shot, no fine-tuning or examples provided |
 | BanglaELECTRA | published | — | 47 | 0.468 | 0.462 | 0.308–0.596 | — | test set is 47 items; differences smaller than the CI width are not meaningful |
 | ViLT | published | — | 30 | 0.467 | 0.452 | 0.270–0.631 | — | test set is 30 items; differences smaller than the CI width are not meaningful |
 | countvec_vit | 5-fold CV | items with an image | 86 | 0.465 | 0.431 | 0.312–0.543 | 0.406 ± 0.093 | test set is 86 items; differences smaller than the CI width are not meaningful |
