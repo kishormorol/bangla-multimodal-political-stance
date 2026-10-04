@@ -80,3 +80,66 @@ Two other environment traps that cost real time:
 * **The sandbox blocks HuggingFace's CDN.** `from_pretrained` stalls with no
   error. Cache checkpoints in a network-enabled step, then train with
   `HF_HUB_OFFLINE=1`.
+
+<!-- ledger:brief -->
+
+# Agent brief: From Words to Images: A Multimodal Benchmark for Bangla Political Stance Detection
+
+This repository is one paper in a submission plan. Several Claude and Codex sessions, on different accounts, work on these papers in parallel. You start with no memory of earlier sessions: this file and `HANDOFF.md` are how the work carries over.
+
+## The paper
+
+What the paper is and how this repository is laid out are described above in this file and in `README.md`.
+
+**This repository is public and the paper is under double-blind review.** Never add the venue, the review cycle, a deadline, an author name or affiliation, or a link to the submission plan to anything committed here — not the paper, not the README, not a commit message. The deadline is in the private plan; ask the author.
+
+The lead author decides the science; agents support it.
+
+## Where things stand
+
+Read `HANDOFF.md` first: the newest entry is the current state. If it is missing or stale, ask the author which step is next before starting.
+
+What each step means here, and what counts as done:
+
+- `novelty` — searched the method's own vocabulary as well as the topic's, within the last week, and nothing does this already. **The author decides.**
+- `design` — research question, data, baselines, metrics and analysis fixed in writing *before* results are seen. **The author decides.**
+- `data` — data obtained, its licence and ethics status recorded, loading script committed, split frozen.
+- `experiments` — every number the paper will report is produced by a committed script from committed configs, with seeds, `n` and intervals.
+- `draft` — the full manuscript, every claim traceable to a result or a verified citation. **The author owns the argument.**
+- `review` — read by someone other than the lead, and their comments resolved.
+- `submit` — submitted; the manuscript id goes in the ledger.
+
+## Rules that are not negotiable
+
+A paper that breaks one of these is worse than no paper: it can be desk-rejected, retracted, or damage the author's record.
+
+1. **No invented citations.** Every reference must be looked up — DOI, Crossref, arXiv, ACL Anthology, PubMed — and its BibTeX taken from that source. Open it and confirm it says what it is cited for. If you cannot verify one, mark it `% UNVERIFIED` in the source and list it in `HANDOFF.md`.
+2. **No number without a source.** Every figure, table entry and percentage in the manuscript comes from a committed script or output file in this repository. Note which one beside it (a LaTeX comment is fine). Never type a result in by hand, round it favourably, or carry one over from a draft.
+3. **No invented data.** Synthetic, simulated or placeholder data may exercise code. It must be labelled as such where it lives, and nothing derived from it may appear in the manuscript.
+4. **Report what happened.** A negative or null result is reported, not tuned away. Do not change the metric, the split, the baselines or the hypothesis after seeing results without the author's explicit decision, recorded in `HANDOFF.md`.
+5. **The author decides the science.** Novelty, design, framework, the claims the paper makes, and anything that changes its contribution are the author's calls. Propose; don't decide.
+6. **Stay in this paper.** Don't pull code, text or data from the author's other paper repositories unless the author asks — several papers share themes, and duplicated text is self-plagiarism.
+
+## How to work
+
+- **Work on a branch** named `agent/<step>-<short-topic>`, and push it. The author reviews and merges; don't push to the default branch unless told to.
+- **Small, honest commits.** The message says what changed and what was verified.
+- **Never write a `Ledger:` line yourself.** Those lines record steps in the plan. Put the line you would suggest in `HANDOFF.md`; the author adds it when merging, once they agree the step is done.
+- **When asked to review** another session's work, check claims against outputs and citations against sources, and report every discrepancy. Do not fix silently.
+
+## Before you stop: update HANDOFF.md
+
+Add an entry at the top of `HANDOFF.md` (create it if it is missing):
+
+```markdown
+## <YYYY-MM-DD> · <Claude or Codex> · <branch>
+Done: what changed, with file paths.
+Verified: what was checked, and how.
+Not verified / open: anything uncertain, any `% UNVERIFIED` citation.
+Needs the author: decisions only they can make.
+Suggested: `Ledger: done <step>` (if a step is complete)
+```
+
+The tool and the session are recorded so the author can write the venue's AI-use disclosure accurately. AI tools cannot be authors; their use must be declared.
+
+<!-- /ledger:brief -->
