@@ -34,6 +34,7 @@ import pandas as pd
 
 from bmpb.config import DataConfig
 from bmpb.data.augment import attach, load_published_augmentations
+from bmpb.data.groups import source_groups
 from bmpb.paths import CORPUS, PROCESSED, RAW, TEST, TRAIN, VAL
 from bmpb.utils.logging import get_logger
 
@@ -123,10 +124,7 @@ def make_splits(
     df = corpus.copy()
     # One group per source article. Un-augmented rows are their own group.
     group_key = spec.get("group_key", "source_index")
-    if group_key in df and df[group_key].notna().any():
-        df["group_id"] = df[group_key].fillna(pd.Series(df["item_id"], index=df.index))
-    else:
-        df["group_id"] = df["item_id"]
+    df["group_id"] = source_groups(df, group_key)
 
     groups = (
         df.groupby("group_id")

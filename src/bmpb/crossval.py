@@ -38,6 +38,7 @@ import yaml
 
 from bmpb.config import DataConfig, ExperimentConfig
 from bmpb.data.augment import attach, load_published_augmentations
+from bmpb.data.groups import source_groups
 from bmpb.metrics import score
 from bmpb.paths import CORPUS, EXPERIMENTS
 from bmpb.utils.logging import get_logger
@@ -58,16 +59,17 @@ def make_folds(
     corpus.
     """
     df = corpus.copy()
-    if group_key in df and df[group_key].notna().any():
-        df["group_id"] = df[group_key].fillna(pd.Series(df["item_id"], index=df.index))
-    else:
-        df["group_id"] = df["item_id"]
+    if n_splits < 2:
+        raise ValueError("Cross-validation requires at least two folds")
+    df["group_id"] = source_groups(df, group_key)
 
     groups = (
         df.groupby("group_id")
         .agg(label=("label", lambda s: s.mode().iat[0]), size=("label", "size"))
         .reset_index()
     )
+    if len(groups) < n_splits:
+        raise ValueError("Cross-validation requires at least one source group per fold")
 
     rng = np.random.default_rng(seed)
     assignment: dict[object, int] = {}
@@ -83,11 +85,18 @@ def make_folds(
     return [np.where(fold_of == f)[0] for f in range(n_splits)]
 
 
-def _fit_predict(cfg: ExperimentConfig, train: pd.DataFrame, test: pd.DataFrame):
+def _fit_predict(
+    cfg: ExperimentConfig,
+    train: pd.DataFrame,
+    test: pd.DataFrame,
+    val: pd.DataFrame | None = None,
+):
     """Train on one fold's training half and predict its held-out half."""
     from bmpb.train import SKLEARN_FAMILIES, _train_sklearn, _train_torch
 
-    splits = {"train": train, "val": test, "test": test}
+    if cfg.family not in SKLEARN_FAMILIES and val is None:
+        raise ValueError("Neural CV requires validation data from the outer training fold")
+    splits = {"train": train, "val": val, "test": test}
     if cfg.family in SKLEARN_FAMILIES:
         frame, predicted, probabilities = _train_sklearn(cfg, splits, Path("."))
     else:
@@ -103,6 +112,8 @@ def cross_validate(
     require_image: bool | None = None,
 ) -> dict:
     cfg = ExperimentConfig.load(config)
+    from bmpb.train import SKLEARN_FAMILIES, git_commit
+
     data_cfg = DataConfig.load()
     set_seed(cfg.seed)
 
@@ -110,6 +121,11 @@ def cross_validate(
         if not CORPUS.exists():
             raise FileNotFoundError(f"{CORPUS} not found. Run `bmpb ingest` first.")
         corpus = pd.read_csv(CORPUS)
+    corpus = corpus.reset_index(drop=True)
+    if corpus["item_id"].duplicated().any():
+        raise ValueError("CV requires unique original item_id values")
+    if "is_augmented" in corpus and corpus["is_augmented"].fillna(False).astype(bool).any():
+        raise ValueError("CV corpus must contain original items only")
 
     # A model that needs an image can only be scored on items that have one.
     # That is a smaller population, so the run records it explicitly rather than
@@ -127,7 +143,12 @@ def cross_validate(
         group_key=data_cfg.split.get("group_key", "source_index"),
         seed=cfg.seed,
     )
-    augmentations = load_published_augmentations(corpus) if cfg.augment else pd.DataFrame()
+    if any(len(fold) == 0 for fold in folds):
+        raise ValueError("CV requires a nonempty test set in every fold")
+    augment_train = cfg.augment and cfg.params.get(
+        "augment_train", data_cfg.split.get("augment_train", True)
+    )
+    augmentations = load_published_augmentations(corpus) if augment_train else pd.DataFrame()
 
     started = time.time()
     per_fold: list[dict] = []
@@ -136,21 +157,36 @@ def cross_validate(
     for index, test_idx in enumerate(folds, start=1):
         test = corpus.iloc[test_idx].reset_index(drop=True)
         train = corpus.drop(index=test_idx).reset_index(drop=True)
+        val = None
+        if cfg.family not in SKLEARN_FAMILIES:
+            # Select checkpoints using only a grouped split of outer training data.
+            inner_folds = make_folds(
+                train,
+                n_splits=5,
+                group_key=data_cfg.split.get("group_key", "source_index"),
+                seed=cfg.seed + index,
+            )
+            val_idx = inner_folds[0]
+            val = train.iloc[val_idx].reset_index(drop=True)
+            train = train.drop(index=val_idx).reset_index(drop=True)
+            if val.empty or train.empty:
+                raise ValueError("Not enough groups for independent inner validation")
         if test.empty or train.empty:
             log.warning("fold %d is empty; skipping", index)
             continue
 
         # Augment the training half only, after the cut.
-        grouped = attach({"train": train, "val": test, "test": test}, augmentations, target="train")
+        grouped = attach({"train": train, "val": val, "test": test}, augmentations, target="train")
         train = grouped["train"]
 
-        frame, predicted, _ = _fit_predict(cfg, train, test)
+        frame, predicted, _ = _fit_predict(cfg, train, test, val)
         truth = frame["label"].to_numpy()
         fold_scores = score(truth, predicted, bootstrap=False)
         per_fold.append(
             {
                 "fold": index,
                 "n_train": len(train),
+                "n_val": len(val) if val is not None else 0,
                 "n_test": len(frame),
                 "accuracy": fold_scores.accuracy,
                 "macro_f1": fold_scores.macro_f1,
@@ -178,6 +214,10 @@ def cross_validate(
         raise RuntimeError(f"{cfg.name}: no fold produced predictions")
 
     predictions = pd.concat(pooled, ignore_index=True)
+    if predictions["item_id"].duplicated().any() or set(predictions["item_id"]) != set(
+        corpus["item_id"]
+    ):
+        raise AssertionError("Every eligible original item must be predicted exactly once")
     overall = score(predictions["label"], predictions["predicted"], seed=cfg.seed)
     fold_f1 = np.array([f["macro_f1"] for f in per_fold])
 
@@ -205,10 +245,18 @@ def cross_validate(
         "modality": cfg.modality,
         "family": cfg.family,
         "pretrained": cfg.pretrained,
-        "protocol": f"grouped stratified {n_splits}-fold CV, {'augmentation inside training folds' if cfg.augment else 'no augmentation'}",
+        "protocol": f"grouped stratified {n_splits}-fold CV",
         "population": population,
         "items_scored": int(len(predictions)),
         "seed": cfg.seed,
+        "git_commit": git_commit(),
+        "augment_train": augment_train,
+        "checkpoint_selection": (
+            "grouped inner validation from outer training data"
+            if cfg.family not in SKLEARN_FAMILIES
+            else "none"
+        ),
+        "fold_item_ids": [[str(corpus.iloc[i]["item_id"]) for i in fold] for fold in folds],
         "accuracy": overall.accuracy,
         "macro_f1": overall.macro_f1,
         "macro_f1_ci95": list(overall.macro_f1_ci95) if overall.macro_f1_ci95 else None,

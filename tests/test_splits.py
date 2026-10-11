@@ -65,3 +65,15 @@ def test_fractions_must_sum_to_one():
     cfg.split = dict(cfg.split, train=0.8, val=0.3, test=0.15)
     with pytest.raises(ValueError, match="sum to 1.0"):
         make_splits(_corpus(), cfg, write=False)
+
+
+def test_source_url_connects_different_declared_groups():
+    corpus = _corpus(60)
+    corpus["source_url"] = [f"https://news.example/{i // 2}" for i in range(len(corpus))]
+    corpus.loc[corpus.source_index == 1, "source_url"] = "https://news.example/0#image"
+    cfg = DataConfig.load()
+    cfg.split = dict(cfg.split, augment_train=False)
+    splits = make_splits(corpus, cfg, write=False)
+    memberships = {row.item_id: name for name, frame in splits.items()
+                   for row in frame.itertuples()}
+    assert memberships["Image_0_0"] == memberships["Image_1_0"]

@@ -11,6 +11,12 @@ and the evaluation protocol behind the paper.
 Three-way stance: `govt_critique` (0), `neutral` (1), `govt_leaning` (2), over
 198 annotated items from 39 Bangladeshi and international outlets.
 
+The collection includes reused items from
+[BanglaBias (Lia et al., 2025)](https://aclanthology.org/2025.banglalp-1.5/).
+See the [dataset provenance audit](docs/dataset-provenance.md) for row-level
+overlap, unmatched items, and metadata exceptions. Current baseline results
+remain provisional until duplicate source URLs are grouped for evaluation.
+
 ## Quick start
 
 ```bash

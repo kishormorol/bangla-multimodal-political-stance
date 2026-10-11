@@ -108,7 +108,10 @@ def attach(
     if dropped:
         log.info("dropped %d augmented rows whose parent is not in %s", dropped, target)
 
-    keep["group_id"] = keep["parent_item_id"]
+    parent_frame = splits[target].set_index("item_id")
+    for column in ("group_id", "source_group", "source_url"):
+        if column in parent_frame:
+            keep[column] = keep["parent_item_id"].map(parent_frame[column])
     keep["split"] = target
     merged = pd.concat([splits[target], keep], ignore_index=True)
     log.info("%s: %d -> %d rows after augmentation", target, len(splits[target]), len(merged))

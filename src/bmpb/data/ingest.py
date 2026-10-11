@@ -27,6 +27,7 @@ from pathlib import Path
 import pandas as pd
 
 from bmpb.config import DataConfig
+from bmpb.data.corrections import apply_corrections
 from bmpb.paths import CORPUS, IMAGE_INDEX, PROCESSED, RAW, ensure_dirs
 from bmpb.utils.logging import get_logger
 
@@ -138,6 +139,9 @@ def _attach_bodies(df: pd.DataFrame) -> pd.DataFrame:
 
     lookup = recovered.set_index("item_id")["body"].to_dict()
     hits = df["item_id"].isin(lookup)
+    # Old body caches are keyed only by item ID; do not reuse repaired URLs.
+    if "source_url_original" in df:
+        hits &= df["source_url_original"].isna()
     df.loc[hits, "text"] = df.loc[hits, "item_id"].map(lookup)
     df.loc[hits, "text_level"] = "article"
     log.info(
@@ -226,6 +230,7 @@ def ingest(cfg: DataConfig | None = None, write: bool = True) -> pd.DataFrame:
     log.info("kept %d of %d rows after dropping unlabeled/empty/duplicate items", len(df), before)
 
     df = _merge_annotators(df, cfg)
+    df = apply_corrections(df)
     df = _attach_bodies(df)
 
     images = build_image_index(cfg, df["item_id"].tolist())

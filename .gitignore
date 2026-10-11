@@ -50,3 +50,7 @@ paper/*.toc
 .DS_Store
 .idea/
 .vscode/
+
+# Local document builds and private training bundles
+/tmp/
+/output/

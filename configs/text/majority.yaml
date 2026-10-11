@@ -6,3 +6,4 @@ num_labels: 3
 seed: 42
 params:
   strategy: most_frequent
+  augment_train: false
