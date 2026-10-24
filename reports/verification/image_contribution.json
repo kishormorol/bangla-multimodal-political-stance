@@ -1,0 +1,1056 @@
+{
+  "purpose": "Executed local comparison of fixed image features added to identical character text features, predicting existing stored labels",
+  "date": "2026-10-23",
+  "status": "complete, independently checked against saved predictions",
+  "protocol_revision": "f99ab56f38956345fbbb92af90c94d2317c86e0f",
+  "implementation_commit": "cb359f50b09358ede5ca67dbff6c5830ddc635e4",
+  "configuration": {
+    "name": "image_contribution_v1",
+    "protocol_revision": "f99ab56f38956345fbbb92af90c94d2317c86e0f",
+    "bundle": "data/interim/replication_inputs_20261023",
+    "input_manifest_sha256": "68ab7b60c753d3eba76b42229f661fe6e800b23a7c6ecebde15fc1c1967e0710",
+    "population_manifest_sha256": "6dac67db1a55a04ab542526c47ff6b11a08705eefe5e6a940542c3049056a1d7",
+    "matched_report_sha256": "0b9cd20556c4a9aa2408e6c4be417ad097944400c84723b9ad509bbfad20f9fd",
+    "headline_sha256": "6d2b0d7addc9d55208c2e5bcf8a59a12554f1b928d92b7695785003e372b9247",
+    "items": 149,
+    "groups": 148,
+    "label_counts": {
+      "0": 72,
+      "1": 43,
+      "2": 34
+    },
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "folds": 5,
+    "text_config": "configs/text/tfidf_logreg.yaml",
+    "sklearn_version": "1.9.1",
+    "threads": 2,
+    "vision": {
+      "repository": "google/vit-base-patch16-224-in21k",
+      "revision": "b4569560a39a0f1af58e3ddaf17facf20ab919b0",
+      "image_size": 224,
+      "batch_size": 4,
+      "device": "cuda"
+    },
+    "classifier": {
+      "C": 1.0,
+      "class_weight": "balanced",
+      "max_iter": 2000,
+      "solver": "lbfgs",
+      "tol": 0.0001,
+      "fit_intercept": true,
+      "l1_ratio": 0,
+      "dual": false,
+      "warm_start": false,
+      "verbose": 0,
+      "n_jobs": null,
+      "intercept_scaling": 1,
+      "random_state": 42
+    },
+    "primary_comparison": "B_minus_A",
+    "bootstrap": {
+      "resamples": 2000,
+      "seed": 42
+    },
+    "descriptive_intervals": "source_group_macro_f1_for_each_condition",
+    "illustrative_effect_thresholds": [
+      0.02,
+      0.05,
+      0.1
+    ],
+    "augmentation": false,
+    "verification": "text_predictions_match_existing_cv_without_augmentation"
+  },
+  "population": {
+    "items": 149,
+    "source_groups": 148,
+    "label_counts": {
+      "0": 72,
+      "1": 43,
+      "2": 34
+    },
+    "historical_image_byte_identity": "unknown",
+    "untouched_evaluation_set": false
+  },
+  "software": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.17.1",
+    "torch": "2.5.1",
+    "transformers": "4.44.2",
+    "Pillow": "12.3.0",
+    "huggingface-hub": "0.36.2"
+  },
+  "python": "3.11.16",
+  "code_sha256": {
+    "src/bmpb/__init__.py": "8a70b980b606ed389eb4f392b607ffbf70ce7318ba94caf2e461513b4800b595",
+    "src/bmpb/audit.py": "0350868ab357a4484d408ae8af5178e0115cae997f8927ae13d35fb2ce591ca1",
+    "src/bmpb/cli.py": "ac68706b40e76a655c3000f059911b10320387aae0f16acdceda3663e764ab7b",
+    "src/bmpb/config.py": "712b568c07c25292c5836374f4b7b315da235dab27a2230e9d636483669b41f1",
+    "src/bmpb/crossval.py": "f806e02e3ddf3814588579149b5f297ea79ed07093f25eceabcb39c1e7a74439",
+    "src/bmpb/data/__init__.py": "1fbbc69d2a633772f7aa7a9102305decd8fb98a7ed3b9b4a101f1e6b3f21fabb",
+    "src/bmpb/data/annotations.py": "d0fa2dcb8fb03b4580e50a505684925c89c501407793d03b5f7e6eee8fe8ef5e",
+    "src/bmpb/data/augment.py": "f97abfc1fa68c4d1dc159a62c37c7658e5708e2c44233fdadc5ae6612bc4c816",
+    "src/bmpb/data/backfill.py": "617f1f167478923b532752199ce215155333aca85b1079900722e6bfdcaf36f0",
+    "src/bmpb/data/collect.py": "9bfb17c36782f2ded4902d3553023bd0f6c76cfaeba63d594c118e7e08b61bc4",
+    "src/bmpb/data/corrections.py": "bacd4f58a4a594c75245923db4215e61b5f6fea66a0c427fc9a81fe626c62ca9",
+    "src/bmpb/data/dataset.py": "3d0f44854b270f53442fe6861bc71600480b70aaee1caeb4fedacd997827504b",
+    "src/bmpb/data/download.py": "7662e6d5647739fbe2bef2a8573b32cf3d3deba7600b287ee4b7e1ebcb44e5ed",
+    "src/bmpb/data/groups.py": "c299cab85b21a7c42d95b677edd8f7b8d747eb6f9f2e8957fb2f380263f7becf",
+    "src/bmpb/data/ingest.py": "199453966c6bb9409ce4fd056abaf9251ad07a36bb4fa5c30d463201616fbdff",
+    "src/bmpb/data/preprocess.py": "f6c0d366f0754e27b027feb67d328ef4756d1b6f43253d14151833f01bc5ae94",
+    "src/bmpb/data/sources.py": "43e99152d1bf8234cc59633122dbc4834451002ae86a82a5ec14580ae0533cf6",
+    "src/bmpb/data/splits.py": "d72560ce78ad7d643b7f439dc3bac4459284e4f157fde6b92a7e7f2f50cd39e8",
+    "src/bmpb/error_analysis.py": "fe8f2cabafca690bbe39681427d6feef9c9ac04573521f83ed8962d3d5540835",
+    "src/bmpb/evaluate.py": "7706fb4d58085434488f92d1947cf74bd0eb6be9f5496f9a409719ad4ccf52fa",
+    "src/bmpb/metrics.py": "f213af6876d7bfa79bd6a77aac4024a12c9fd36e8af4ab6a0c0f4c930182f7bf",
+    "src/bmpb/models/__init__.py": "1cc7dd0058fe7facce97a980106825009d85de3352e0930b49935147b9136980",
+    "src/bmpb/models/baselines.py": "7887a97265bd651fef73585943a336575fc93a1e7b5a56dd17e2fcc9d6310bbc",
+    "src/bmpb/models/heads.py": "8a623f0a0c6c79c1a700e0fae9c28d7ae8500f6441375cbf464de6f0c1dd5e3e",
+    "src/bmpb/models/multimodal.py": "ddecb26c3bf860aa30c3e3767d157af82058cc7dc476a929b3af7c40677385b9",
+    "src/bmpb/models/registry.py": "e88d7a15aeb9e5e0a810dab0cbdfd129d045dc9935023efdd1da4aa3f87aad22",
+    "src/bmpb/models/text.py": "71e72fc3bfe55681edf938412068fe9471fad5564d8b17d88e1f434a73e9ad4e",
+    "src/bmpb/paths.py": "2835ad06a7bcac3183ae3b8d630a2c08dc80dc14a9a7df7109d40a9619fd4f77",
+    "src/bmpb/significance.py": "f9cd13a1094af0e381aa0b95f4327cbc5208adaaf0296bdb70a4701de0d9bef2",
+    "src/bmpb/train.py": "2507aa8aae9bf0000250aff0690f95f3c5b062a5a84485d0e64096101dad22cb",
+    "src/bmpb/utils/__init__.py": "11e08f685f822f41ba6dab85ef1e29b1b383c13aebf305dd7378b2bf4542324f",
+    "src/bmpb/utils/logging.py": "c49d0f03b2a5b1d611ceb87ef6e0e04301d468408e494d1bde5f54c6493a0118",
+    "src/bmpb/utils/seed.py": "6fadd04494f16b30a2640419bf9d9b6ad1ab4add0579737834817a9ea94f621a",
+    "scripts/image_contribution.py": "5f3ac9cf7332c14a31a7a32f8e03e59c5bdefb86befdf07b5f6c653c3e6515d4",
+    "scripts/matched_analysis.py": "2f7dc3e7ecb7a285e446cb02cc7f3d0531679d1c5618dd32b8681e85cbbfa5c3",
+    "scripts/run_matched_sweep.py": "123f744eda9cbf2945a1f9d39cba7d16820f7c1c64b6268a6f5231cb8c3c293a",
+    "configs/ablations/image_contribution.yaml": "70a5d87a1bf71e8024d29ef363566c652ac719fefadb4f1ed6639b2d0dad6403",
+    "configs/text/tfidf_logreg.yaml": "3a3a1e608724ba42b12deade7f35a8a3cbc8cbd6c14043d220ec797b91f67c71"
+  },
+  "vision": {
+    "source": {
+      "repository": "google/vit-base-patch16-224-in21k",
+      "revision": "b4569560a39a0f1af58e3ddaf17facf20ab919b0",
+      "image_size": 224,
+      "batch_size": 4,
+      "device": "cuda"
+    },
+    "model_files_sha256": {
+      "config.json": "d477a481f825c170a1bb8cd5e4f5788319466ecf4ede0eb24e9cd923a9aa8fea",
+      "preprocessor_config.json": "90d1ae427c27d2b9dcb01f6a62ba96aa67aac2de1697c59cd212055b5035c4a2",
+      "model.safetensors": "fd4e1169c7aa6c2dbfa8a6448be13b35abc0ee256190857c90009d12c094619b"
+    },
+    "loading_info": {
+      "missing_keys": [],
+      "unexpected_keys": [],
+      "mismatched_keys": [],
+      "error_msgs": []
+    },
+    "processor": {
+      "_processor_class": null,
+      "do_resize": true,
+      "do_rescale": true,
+      "do_normalize": true,
+      "size": {
+        "height": 224,
+        "width": 224
+      },
+      "resample": 2,
+      "rescale_factor": 0.00392156862745098,
+      "image_mean": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "image_std": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "image_processor_type": "ViTImageProcessor"
+    },
+    "feature_sha256": "ae57c40d9282baf2ebae8b28e749902354c66fc9a527701d934675669d7c23f2",
+    "shape": [
+      149,
+      768
+    ],
+    "device": "NVIDIA GeForce GTX 1650 Ti",
+    "torch": "2.5.1+cu124",
+    "cuda": "12.4",
+    "seconds": 4.661142197990557,
+    "peak_allocated_bytes": 412989440,
+    "peak_reserved_bytes": 482344960
+  },
+  "training": {
+    "fits": 75,
+    "maximum_observed_iterations": 16,
+    "fit_seconds_sum": 1.9879793109867023,
+    "text_block_equality_checks": 50,
+    "image_block_equality_checks": 50,
+    "convergence_warning_policy": "fatal, no run failure"
+  },
+  "artifact_sha256": {
+    "fits.jsonl": "ec7f907b9a2749ba4df971a11cabdaabcc9748c88a201dbf79ac292f5c10502f",
+    "image_features.npy": "ae57c40d9282baf2ebae8b28e749902354c66fc9a527701d934675669d7c23f2",
+    "plan.json": "b5acec728d1a9fa1b58f467fed1a1e7a72db20fa0fed4af666bacc7cec0fbb9f",
+    "results.json": "daa0f6636a0504c5e004ff2634b996c013734a1e28dd933cb811b3af709a042b",
+    "seed_42_A.csv": "9591b6a496e6ae9da1fe9de6da928c07ef8096451111f9bab4aa019c584f4584",
+    "seed_42_B.csv": "f600a097f9dd6c0170fe4b17c2eeacb0fabcb94a5d5b6fdcf3ebe4260f072f2f",
+    "seed_42_C.csv": "34220b67324811f2cbbbed123c31db8eda97f8308d3282a67613d307ef58f0bc",
+    "seed_43_A.csv": "85b8fff22e13d75c92e330790b079eddb456c6f0f760c5b5c41c9b45d00ffee8",
+    "seed_43_B.csv": "8ca259b62848f27ab740e2e847efe92968a012f464454e17828f2bf7ce07ccbe",
+    "seed_43_C.csv": "4d17233f9a2ad2d286c1bd2c0f2a9b3e1ddf5549b0996f9aa36d3cca9b46d351",
+    "seed_44_A.csv": "0c1f9b7a0ee539b61cc4f1b21287a1b0548ee2dac203c058db4d9694ea6c188e",
+    "seed_44_B.csv": "916e560909401927f438d07557a8cb62e1a2d9136c868c166e6dc9f61fd62d0d",
+    "seed_44_C.csv": "32c4bd96ed070872aa742549a344af1550f775fc07da13fa187d92b9c78d9098",
+    "seed_45_A.csv": "a14eb6fc637cd5e2f034e64d9477f756379eb34a3ae4b48a947fc0f7084c54f9",
+    "seed_45_B.csv": "93ca8bc47be80a9162e21a0a314f257f7f1d9e9870f4b4dd35ee6fcc7bc160b9",
+    "seed_45_C.csv": "e622a88da91bcbddb03d7fb91d971cfb78259442bae8a0ed49a072fd47000989",
+    "seed_46_A.csv": "9af37d440bb5a1e6c09d69d3c56fe46056ae11c00c0d542157d2ac0a943fd0f5",
+    "seed_46_B.csv": "1405770f7e76d4036b10bfdc044fb804b9f19a8893912a228fa4e0938a521dc7",
+    "seed_46_C.csv": "c20ab200d673d8727ab5718c589d59544e5fe72fc2b3f0e629d55cc3353d782b",
+    "vision.json": "cbccc2a02b9c1302f1d7a94cb6469bb45da84e9cb68320c8a570980ba3769833"
+  },
+  "verification": {
+    "status": "passed",
+    "run_manifest_sha256": "cf2e502dd64bc9ca3f7aa7f0267f1cde5a6be3dea0919a116565aef4a01fd4a4",
+    "reference_run_manifest_sha256": "6fc220f10c0340b867c548bc7b9089f30455e60886dad073cb8f0fe3b8785d47",
+    "reference_predictions_sha256": "0ae5cc6caa88e3ed8df3f2f8ee042665c1842aa4a39eb3abba8e6f92975892ca",
+    "reference_run": "experiments/image_contribution_reference_20261023/cv-tfidf_logreg-20261023-203311-6mswegik",
+    "artifact_checksums_verified": 20,
+    "seeds_recalculated": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "independent_calculation": "NumPy confusion counts and complete source group resampling, 2000 draws, seed42, no production metric helper",
+    "metric_absolute_tolerance": 1e-15,
+    "text_reference_identical_item_predictions": 149,
+    "text_reference_folds_identical_after_numbering_offset": true,
+    "frozen_input_files_unchanged": 156,
+    "implementation_files_unchanged": 38
+  },
+  "historical_numerical_reports_and_data": "unchanged from a935d118dd843cb40ed14bfeaa2a958c1e0ce111",
+  "threshold_sensitivity": [
+    {
+      "illustrative_gain": 0.02,
+      "primary_interval_upper_bound_below_gain": true
+    },
+    {
+      "illustrative_gain": 0.05,
+      "primary_interval_upper_bound_below_gain": true
+    },
+    {
+      "illustrative_gain": 0.1,
+      "primary_interval_upper_bound_below_gain": true
+    }
+  ],
+  "results": {
+    "status": "complete",
+    "seeds": [
+      {
+        "seed": 42,
+        "scores": {
+          "A": {
+            "accuracy": 0.5838926174496645,
+            "macro_f1": 0.5641898702813674,
+            "weighted_f1": 0.5839884872016515,
+            "per_class_f1": {
+              "govt_critique": 0.6277372262773723,
+              "neutral": 0.6236559139784946,
+              "govt_leaning": 0.4411764705882353
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                43,
+                13,
+                16
+              ],
+              [
+                11,
+                29,
+                3
+              ],
+              [
+                11,
+                8,
+                15
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.4820096550922043,
+              0.6420430788154111
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          },
+          "B": {
+            "accuracy": 0.48322147651006714,
+            "macro_f1": 0.45880926013816375,
+            "weighted_f1": 0.4816326530612245,
+            "per_class_f1": {
+              "govt_critique": 0.5578231292517006,
+              "neutral": 0.4186046511627907,
+              "govt_leaning": 0.4
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                41,
+                19,
+                12
+              ],
+              [
+                19,
+                18,
+                6
+              ],
+              [
+                15,
+                6,
+                13
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.37522048677715825,
+              0.5423328152995044
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          },
+          "C": {
+            "accuracy": 0.4228187919463087,
+            "macro_f1": 0.40740740740740744,
+            "weighted_f1": 0.4297481787414674,
+            "per_class_f1": {
+              "govt_critique": 0.5230769230769231,
+              "neutral": 0.28888888888888886,
+              "govt_leaning": 0.41025641025641024
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                34,
+                23,
+                15
+              ],
+              [
+                17,
+                13,
+                13
+              ],
+              [
+                7,
+                11,
+                16
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.3261511966910476,
+              0.4854044731917259
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          }
+        },
+        "B_minus_A": {
+          "n": 149,
+          "groups": 148,
+          "delta_macro_f1": -0.1053806101432036,
+          "ci95": [
+            -0.18122988717155897,
+            -0.02304297180846233
+          ],
+          "share_resamples_above_zero": 0.008
+        },
+        "direction": "negative",
+        "C_minus_A": {
+          "delta_macro_f1": -0.15678246287395992,
+          "ci95": [
+            -0.2541317171726772,
+            -0.04836492769407003
+          ]
+        }
+      },
+      {
+        "seed": 43,
+        "scores": {
+          "A": {
+            "accuracy": 0.6040268456375839,
+            "macro_f1": 0.5620770090019055,
+            "weighted_f1": 0.5939246729295904,
+            "per_class_f1": {
+              "govt_critique": 0.6710526315789473,
+              "neutral": 0.6292134831460674,
+              "govt_leaning": 0.38596491228070173
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                51,
+                12,
+                9
+              ],
+              [
+                12,
+                28,
+                3
+              ],
+              [
+                17,
+                6,
+                11
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.47768826223525807,
+              0.6419481307929206
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          },
+          "B": {
+            "accuracy": 0.4966442953020134,
+            "macro_f1": 0.46598051539912005,
+            "weighted_f1": 0.4938781062942137,
+            "per_class_f1": {
+              "govt_critique": 0.581081081081081,
+              "neutral": 0.4418604651162791,
+              "govt_leaning": 0.375
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                43,
+                15,
+                14
+              ],
+              [
+                20,
+                19,
+                4
+              ],
+              [
+                13,
+                9,
+                12
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.37882298978395357,
+              0.5520860516290299
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          },
+          "C": {
+            "accuracy": 0.4161073825503356,
+            "macro_f1": 0.40588018848888413,
+            "weighted_f1": 0.41996208745552194,
+            "per_class_f1": {
+              "govt_critique": 0.4696969696969697,
+              "neutral": 0.3695652173913043,
+              "govt_leaning": 0.3783783783783784
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                31,
+                23,
+                18
+              ],
+              [
+                18,
+                17,
+                8
+              ],
+              [
+                11,
+                9,
+                14
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.3220496297595791,
+              0.4878506860454035
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          }
+        },
+        "B_minus_A": {
+          "n": 149,
+          "groups": 148,
+          "delta_macro_f1": -0.09609649360278544,
+          "ci95": [
+            -0.17908690629066398,
+            -0.006143953341995965
+          ],
+          "share_resamples_above_zero": 0.018
+        },
+        "direction": "negative",
+        "C_minus_A": {
+          "delta_macro_f1": -0.15619682051302136,
+          "ci95": [
+            -0.2540644570627374,
+            -0.04997375773829958
+          ]
+        }
+      },
+      {
+        "seed": 44,
+        "scores": {
+          "A": {
+            "accuracy": 0.610738255033557,
+            "macro_f1": 0.5809983120327947,
+            "weighted_f1": 0.6085359676195131,
+            "per_class_f1": {
+              "govt_critique": 0.6758620689655173,
+              "neutral": 0.6363636363636364,
+              "govt_leaning": 0.4307692307692308
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                49,
+                11,
+                12
+              ],
+              [
+                10,
+                28,
+                5
+              ],
+              [
+                14,
+                6,
+                14
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.49557909527447347,
+              0.6584486179020294
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          },
+          "B": {
+            "accuracy": 0.4899328859060403,
+            "macro_f1": 0.45859712426876603,
+            "weighted_f1": 0.4921822042527241,
+            "per_class_f1": {
+              "govt_critique": 0.6,
+              "neutral": 0.4175824175824176,
+              "govt_leaning": 0.3582089552238806
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                42,
+                17,
+                13
+              ],
+              [
+                16,
+                19,
+                8
+              ],
+              [
+                10,
+                12,
+                12
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.37346592854513155,
+              0.5384916887309733
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          },
+          "C": {
+            "accuracy": 0.4228187919463087,
+            "macro_f1": 0.41663156424478337,
+            "weighted_f1": 0.42813130464301474,
+            "per_class_f1": {
+              "govt_critique": 0.4806201550387597,
+              "neutral": 0.3368421052631579,
+              "govt_leaning": 0.43243243243243246
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                31,
+                25,
+                16
+              ],
+              [
+                19,
+                16,
+                8
+              ],
+              [
+                7,
+                11,
+                16
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.3384274270724979,
+              0.49356377115667516
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          }
+        },
+        "B_minus_A": {
+          "n": 149,
+          "groups": 148,
+          "delta_macro_f1": -0.1224011877640287,
+          "ci95": [
+            -0.20040513487134126,
+            -0.03533871982020763
+          ],
+          "share_resamples_above_zero": 0.002
+        },
+        "direction": "negative",
+        "C_minus_A": {
+          "delta_macro_f1": -0.16436674778801136,
+          "ci95": [
+            -0.26936594131634634,
+            -0.05306287564017722
+          ]
+        }
+      },
+      {
+        "seed": 45,
+        "scores": {
+          "A": {
+            "accuracy": 0.5771812080536913,
+            "macro_f1": 0.5483312983312983,
+            "weighted_f1": 0.5741491915988561,
+            "per_class_f1": {
+              "govt_critique": 0.6388888888888888,
+              "neutral": 0.5934065934065934,
+              "govt_leaning": 0.4126984126984127
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                46,
+                14,
+                12
+              ],
+              [
+                12,
+                27,
+                4
+              ],
+              [
+                14,
+                7,
+                13
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.46294516659326906,
+              0.6299938280069557
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          },
+          "B": {
+            "accuracy": 0.5033557046979866,
+            "macro_f1": 0.46312480067170964,
+            "weighted_f1": 0.4959960696737709,
+            "per_class_f1": {
+              "govt_critique": 0.6103896103896104,
+              "neutral": 0.3855421686746988,
+              "govt_leaning": 0.39344262295081966
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                47,
+                15,
+                10
+              ],
+              [
+                22,
+                16,
+                5
+              ],
+              [
+                13,
+                9,
+                12
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.37756530232641994,
+              0.5466980657087303
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          },
+          "C": {
+            "accuracy": 0.40939597315436244,
+            "macro_f1": 0.3857593387005152,
+            "weighted_f1": 0.4095402426235431,
+            "per_class_f1": {
+              "govt_critique": 0.5034965034965035,
+              "neutral": 0.2823529411764706,
+              "govt_leaning": 0.37142857142857144
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                36,
+                21,
+                15
+              ],
+              [
+                23,
+                12,
+                8
+              ],
+              [
+                12,
+                9,
+                13
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.3064460822670959,
+              0.46439952606331625
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          }
+        },
+        "B_minus_A": {
+          "n": 149,
+          "groups": 148,
+          "delta_macro_f1": -0.08520649765958871,
+          "ci95": [
+            -0.17292123871914247,
+            0.002508443927800124
+          ],
+          "share_resamples_above_zero": 0.0305
+        },
+        "direction": "unresolved",
+        "C_minus_A": {
+          "delta_macro_f1": -0.16257195963078314,
+          "ci95": [
+            -0.2634619291937218,
+            -0.059126843908777336
+          ]
+        }
+      },
+      {
+        "seed": 46,
+        "scores": {
+          "A": {
+            "accuracy": 0.5302013422818792,
+            "macro_f1": 0.4811809781383818,
+            "weighted_f1": 0.5199685984090465,
+            "per_class_f1": {
+              "govt_critique": 0.6274509803921569,
+              "neutral": 0.5057471264367817,
+              "govt_leaning": 0.3103448275862069
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                48,
+                13,
+                11
+              ],
+              [
+                17,
+                22,
+                4
+              ],
+              [
+                16,
+                9,
+                9
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.3925050735004223,
+              0.5587362984237983
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          },
+          "B": {
+            "accuracy": 0.47651006711409394,
+            "macro_f1": 0.4343074165414374,
+            "weighted_f1": 0.4673749555768817,
+            "per_class_f1": {
+              "govt_critique": 0.5641025641025641,
+              "neutral": 0.43373493975903615,
+              "govt_leaning": 0.3050847457627119
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                44,
+                15,
+                13
+              ],
+              [
+                22,
+                18,
+                3
+              ],
+              [
+                18,
+                7,
+                9
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.34957476298634116,
+              0.5135349173627922
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          },
+          "C": {
+            "accuracy": 0.40939597315436244,
+            "macro_f1": 0.3930594460006225,
+            "weighted_f1": 0.4117396399275594,
+            "per_class_f1": {
+              "govt_critique": 0.4857142857142857,
+              "neutral": 0.3111111111111111,
+              "govt_leaning": 0.38235294117647056
+            },
+            "support": {
+              "govt_critique": 72,
+              "neutral": 43,
+              "govt_leaning": 34
+            },
+            "confusion": [
+              [
+                34,
+                23,
+                15
+              ],
+              [
+                23,
+                14,
+                6
+              ],
+              [
+                11,
+                10,
+                13
+              ]
+            ],
+            "n": 149,
+            "macro_f1_ci95": [
+              0.3118591914513275,
+              0.4712157688060305
+            ],
+            "majority_baseline_accuracy": 0.48322147651006714,
+            "notes": [],
+            "interval_unit": "source group, conditional on saved predictions"
+          }
+        },
+        "B_minus_A": {
+          "n": 149,
+          "groups": 148,
+          "delta_macro_f1": -0.04687356159694439,
+          "ci95": [
+            -0.11414653124454939,
+            0.02506021616575416
+          ],
+          "share_resamples_above_zero": 0.1155
+        },
+        "direction": "unresolved",
+        "C_minus_A": {
+          "delta_macro_f1": -0.0881215321377593,
+          "ci95": [
+            -0.18194788207639218,
+            0.013267511814729583
+          ]
+        }
+      }
+    ]
+  },
+  "limits": [
+    "All intervals condition on fitted predictions and recorded source groups. They omit model refitting, annotation, event and outlet uncertainty.",
+    "Fold seeds reuse the same items and are not independent datasets or training randomness estimates.",
+    "The current images are verified bytes, but their identity with historical images is unknown.",
+    "Independent Bangla review has not established label visibility or semantic image pairing.",
+    "No accepted useful effect threshold was fixed. The stated thresholds are illustrative.",
+    "Frozen ViT features and a linear classifier cannot settle the value of images for other models or future news."
+  ],
+  "independent_branch_review": {
+    "base_revision": "a935d118dd843cb40ed14bfeaa2a958c1e0ce111",
+    "implementation_commit": "4050e40f9fa35ba47c98e1288591cdac07a3c077",
+    "configuration_unchanged": true,
+    "feature_bytes_identical": true,
+    "prediction_files_identical": 15,
+    "all_five_seed_results_identical": true,
+    "artifact_checksums_verified": 20,
+    "run_manifest_sha256": "fb9e53c305b013a98fb3779e180b0290930962a276d8041efd4cc91f6223d1c4",
+    "code_sha256": {
+      "src/bmpb/__init__.py": "8a70b980b606ed389eb4f392b607ffbf70ce7318ba94caf2e461513b4800b595",
+      "src/bmpb/audit.py": "0350868ab357a4484d408ae8af5178e0115cae997f8927ae13d35fb2ce591ca1",
+      "src/bmpb/cli.py": "ac68706b40e76a655c3000f059911b10320387aae0f16acdceda3663e764ab7b",
+      "src/bmpb/config.py": "a41db42f2aa4a78336ddf258a92d490e5b510980fbcc5a2d25ab57f2d4356aaa",
+      "src/bmpb/crossval.py": "b71766bf9c490a99f7e007ffb5142e1916e90b435f075b9eadacf8bf30a7421c",
+      "src/bmpb/data/__init__.py": "1fbbc69d2a633772f7aa7a9102305decd8fb98a7ed3b9b4a101f1e6b3f21fabb",
+      "src/bmpb/data/annotations.py": "d0fa2dcb8fb03b4580e50a505684925c89c501407793d03b5f7e6eee8fe8ef5e",
+      "src/bmpb/data/augment.py": "f97abfc1fa68c4d1dc159a62c37c7658e5708e2c44233fdadc5ae6612bc4c816",
+      "src/bmpb/data/backfill.py": "617f1f167478923b532752199ce215155333aca85b1079900722e6bfdcaf36f0",
+      "src/bmpb/data/collect.py": "9bfb17c36782f2ded4902d3553023bd0f6c76cfaeba63d594c118e7e08b61bc4",
+      "src/bmpb/data/corrections.py": "bacd4f58a4a594c75245923db4215e61b5f6fea66a0c427fc9a81fe626c62ca9",
+      "src/bmpb/data/dataset.py": "3d0f44854b270f53442fe6861bc71600480b70aaee1caeb4fedacd997827504b",
+      "src/bmpb/data/download.py": "7662e6d5647739fbe2bef2a8573b32cf3d3deba7600b287ee4b7e1ebcb44e5ed",
+      "src/bmpb/data/groups.py": "c299cab85b21a7c42d95b677edd8f7b8d747eb6f9f2e8957fb2f380263f7becf",
+      "src/bmpb/data/ingest.py": "199453966c6bb9409ce4fd056abaf9251ad07a36bb4fa5c30d463201616fbdff",
+      "src/bmpb/data/preprocess.py": "f6c0d366f0754e27b027feb67d328ef4756d1b6f43253d14151833f01bc5ae94",
+      "src/bmpb/data/sources.py": "43e99152d1bf8234cc59633122dbc4834451002ae86a82a5ec14580ae0533cf6",
+      "src/bmpb/data/splits.py": "d72560ce78ad7d643b7f439dc3bac4459284e4f157fde6b92a7e7f2f50cd39e8",
+      "src/bmpb/error_analysis.py": "fe8f2cabafca690bbe39681427d6feef9c9ac04573521f83ed8962d3d5540835",
+      "src/bmpb/evaluate.py": "7706fb4d58085434488f92d1947cf74bd0eb6be9f5496f9a409719ad4ccf52fa",
+      "src/bmpb/metrics.py": "24e17d0bc5978e00141e098c6a7b53ce3f101652c0fac98260075a70d23b32fd",
+      "src/bmpb/models/__init__.py": "1cc7dd0058fe7facce97a980106825009d85de3352e0930b49935147b9136980",
+      "src/bmpb/models/baselines.py": "9d91604877101bb10055a9de07710c66348829a29e8283d5c5d67be755037b4e",
+      "src/bmpb/models/heads.py": "8a623f0a0c6c79c1a700e0fae9c28d7ae8500f6441375cbf464de6f0c1dd5e3e",
+      "src/bmpb/models/multimodal.py": "b4979d835e4b6afaf8ac5f829f8eef60f0848fdc279793681779baa1031bde9e",
+      "src/bmpb/models/registry.py": "e88d7a15aeb9e5e0a810dab0cbdfd129d045dc9935023efdd1da4aa3f87aad22",
+      "src/bmpb/models/text.py": "917f79efdb553fd67012833940632458f492d54a5220eca8ef5cc89cad5d2255",
+      "src/bmpb/paths.py": "2835ad06a7bcac3183ae3b8d630a2c08dc80dc14a9a7df7109d40a9619fd4f77",
+      "src/bmpb/significance.py": "f9cd13a1094af0e381aa0b95f4327cbc5208adaaf0296bdb70a4701de0d9bef2",
+      "src/bmpb/train.py": "2507aa8aae9bf0000250aff0690f95f3c5b062a5a84485d0e64096101dad22cb",
+      "src/bmpb/utils/__init__.py": "11e08f685f822f41ba6dab85ef1e29b1b383c13aebf305dd7378b2bf4542324f",
+      "src/bmpb/utils/logging.py": "c49d0f03b2a5b1d611ceb87ef6e0e04301d468408e494d1bde5f54c6493a0118",
+      "src/bmpb/utils/seed.py": "6fadd04494f16b30a2640419bf9d9b6ad1ab4add0579737834817a9ea94f621a",
+      "scripts/image_contribution.py": "640f9d28281a04bac210160a46c92794b060b777986ac9bd5fd7d98f40b0585b",
+      "scripts/matched_analysis.py": "00a8c2df878bb87bc01aca174d0f46acef9fa1abf705424c648fcfb6375ae7f3",
+      "scripts/run_matched_sweep.py": "889f4874b1b30e0b0743d44851307e48fdd7df41d4045014eb27e21150a38e03",
+      "configs/ablations/image_contribution.yaml": "70a5d87a1bf71e8024d29ef363566c652ac719fefadb4f1ed6639b2d0dad6403",
+      "configs/text/tfidf_logreg.yaml": "3a3a1e608724ba42b12deade7f35a8a3cbc8cbd6c14043d220ec797b91f67c71"
+    },
+    "artifact_sha256": {
+      "fits.jsonl": "36c52d327a25744fc5843236356c7e7748ec0389bdffbcaefaf3ba53e2c00258",
+      "image_features.npy": "ae57c40d9282baf2ebae8b28e749902354c66fc9a527701d934675669d7c23f2",
+      "plan.json": "0d80a693f6c7c9a115aafc6c02ccc844d72860a0379b3db067cc3875961b9617",
+      "results.json": "daa0f6636a0504c5e004ff2634b996c013734a1e28dd933cb811b3af709a042b",
+      "seed_42_A.csv": "9591b6a496e6ae9da1fe9de6da928c07ef8096451111f9bab4aa019c584f4584",
+      "seed_42_B.csv": "f600a097f9dd6c0170fe4b17c2eeacb0fabcb94a5d5b6fdcf3ebe4260f072f2f",
+      "seed_42_C.csv": "34220b67324811f2cbbbed123c31db8eda97f8308d3282a67613d307ef58f0bc",
+      "seed_43_A.csv": "85b8fff22e13d75c92e330790b079eddb456c6f0f760c5b5c41c9b45d00ffee8",
+      "seed_43_B.csv": "8ca259b62848f27ab740e2e847efe92968a012f464454e17828f2bf7ce07ccbe",
+      "seed_43_C.csv": "4d17233f9a2ad2d286c1bd2c0f2a9b3e1ddf5549b0996f9aa36d3cca9b46d351",
+      "seed_44_A.csv": "0c1f9b7a0ee539b61cc4f1b21287a1b0548ee2dac203c058db4d9694ea6c188e",
+      "seed_44_B.csv": "916e560909401927f438d07557a8cb62e1a2d9136c868c166e6dc9f61fd62d0d",
+      "seed_44_C.csv": "32c4bd96ed070872aa742549a344af1550f775fc07da13fa187d92b9c78d9098",
+      "seed_45_A.csv": "a14eb6fc637cd5e2f034e64d9477f756379eb34a3ae4b48a947fc0f7084c54f9",
+      "seed_45_B.csv": "93ca8bc47be80a9162e21a0a314f257f7f1d9e9870f4b4dd35ee6fcc7bc160b9",
+      "seed_45_C.csv": "e622a88da91bcbddb03d7fb91d971cfb78259442bae8a0ed49a072fd47000989",
+      "seed_46_A.csv": "9af37d440bb5a1e6c09d69d3c56fe46056ae11c00c0d542157d2ac0a943fd0f5",
+      "seed_46_B.csv": "1405770f7e76d4036b10bfdc044fb804b9f19a8893912a228fa4e0938a521dc7",
+      "seed_46_C.csv": "c20ab200d673d8727ab5718c589d59544e5fe72fc2b3f0e629d55cc3353d782b",
+      "vision.json": "7310be73ba8f12eb57928468bfc5fe33f80653cd0439f9948a2979051c639a2e"
+    },
+    "setup_failure": "Initial checkout could not resolve the private bundle before fitting. Its failure record is preserved separately. Correcting the local input link allowed the unchanged study configuration to run.",
+    "analysis_interfaces": "Original upstream helper receives the frozen group mapping. The companion model PR helper reads those groups from the same prediction frames.",
+    "same_local_machine": true,
+    "same_software_versions": true,
+    "external_researcher_replication": false
+  }
+}

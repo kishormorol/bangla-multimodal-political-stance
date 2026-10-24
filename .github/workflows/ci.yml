@@ -33,6 +33,19 @@ jobs:
       - name: Test
         run: pytest -q
 
+      - name: CPU behavior checks
+        env:
+          HF_HUB_OFFLINE: "1"
+          CUDA_VISIBLE_DEVICES: ""
+        run: |
+          python_path="$(python -c 'import sys; print(sys.executable)')"
+          mkdir -p .tmp
+          for source in checks/*.rs; do
+            binary=".tmp/$(basename "$source" .rs)"
+            rustc --edition=2021 "$source" -o "$binary"
+            "$binary" "$python_path"
+          done
+
       # The tests run on synthetic frames, so CI proves the pipeline's logic
       # without needing the Drive dataset.
       - name: Import check

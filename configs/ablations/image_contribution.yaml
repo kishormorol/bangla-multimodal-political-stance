@@ -1,0 +1,41 @@
+name: image_contribution_v1
+protocol_revision: f99ab56f38956345fbbb92af90c94d2317c86e0f
+bundle: data/interim/replication_inputs_20261023
+input_manifest_sha256: 68ab7b60c753d3eba76b42229f661fe6e800b23a7c6ecebde15fc1c1967e0710
+population_manifest_sha256: 6dac67db1a55a04ab542526c47ff6b11a08705eefe5e6a940542c3049056a1d7
+matched_report_sha256: 0b9cd20556c4a9aa2408e6c4be417ad097944400c84723b9ad509bbfad20f9fd
+headline_sha256: 6d2b0d7addc9d55208c2e5bcf8a59a12554f1b928d92b7695785003e372b9247
+items: 149
+groups: 148
+label_counts: {0: 72, 1: 43, 2: 34}
+seeds: [42, 43, 44, 45, 46]
+folds: 5
+text_config: configs/text/tfidf_logreg.yaml
+sklearn_version: 1.9.1
+threads: 2
+vision:
+  repository: google/vit-base-patch16-224-in21k
+  revision: b4569560a39a0f1af58e3ddaf17facf20ab919b0
+  image_size: 224
+  batch_size: 4
+  device: cuda
+classifier:
+  C: 1.0
+  class_weight: balanced
+  max_iter: 2000
+  solver: lbfgs
+  tol: 0.0001
+  fit_intercept: true
+  l1_ratio: 0
+  dual: false
+  warm_start: false
+  verbose: 0
+  n_jobs: null
+  intercept_scaling: 1
+  random_state: 42
+primary_comparison: B_minus_A
+bootstrap: {resamples: 2000, seed: 42}
+descriptive_intervals: source_group_macro_f1_for_each_condition
+illustrative_effect_thresholds: [0.02, 0.05, 0.10]
+augmentation: false
+verification: text_predictions_match_existing_cv_without_augmentation
