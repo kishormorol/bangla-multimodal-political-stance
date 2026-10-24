@@ -1,3 +1,13 @@
+# Manuscript files
+
+The current manuscript source is `latex/acl_latex.tex` in this directory.
+The `latex/` directory at the repository root is an older manuscript.
+See [`docs/paper.md`](../docs/paper.md) for the mirror workflow and
+[`docs/evidence_status.md`](../docs/evidence_status.md) for result checks.
+
+The template documentation below is retained from the upstream style files.
+It does not identify the current manuscript or authorize publishing changes.
+
 # *ACL Paper Styles
 
 This directory contains the latest LaTeX and Word templates for *ACL

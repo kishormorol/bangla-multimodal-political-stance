@@ -14,8 +14,15 @@ Three-way stance: `govt_critique` (0), `neutral` (1), `govt_leaning` (2), over
 The collection includes reused items from
 [BanglaBias (Lia et al., 2025)](https://aclanthology.org/2025.banglalp-1.5/).
 See the [dataset provenance audit](docs/dataset-provenance.md) for row-level
-overlap, unmatched items, and metadata exceptions. Current baseline results
-remain provisional until duplicate source URLs are grouped for evaluation.
+overlap, unmatched items, and metadata exceptions. The current implementation
+groups duplicate source URLs. The committed matched report and seed report
+describe different item counts and require separate interpretation. See the
+[evidence status](docs/evidence_status.md) for reproducible arithmetic checks
+and the limits of the available artifacts.
+
+The [recovered input record](docs/input_recovery.md)
+and [proposed image comparison](docs/replication_protocol.md) distinguish
+available replication inputs from experiments that have not run.
 
 ## Quick start
 
@@ -49,7 +56,7 @@ src/bmpb/
 data/               not committed; see data/README.md
 experiments/        one directory per run: config, metrics, predictions
 reports/            figures and the results table
-paper/              Overleaf mirror; see paper/README.md
+paper/              current manuscript mirror; see docs/paper.md
 tests/
 ```
 
@@ -63,8 +70,10 @@ lists what is registered and which configs use it.
 seed, split sizes, device, wall time), `predictions.csv` and `metrics.json`.
 Every number in the results table traces back to one of these.
 
-`make leaderboard` scores local runs *and* the prediction CSVs that shipped in
-the Drive folder, so the existing results sit in the same table as new ones:
+`make leaderboard` scores local runs and the prediction CSVs from the Drive
+folder. The following table is a historical snapshot, with different
+evaluation populations. Current manuscript tables instead use the separate
+committed summaries in `reports/submission/`.
 
 | Model | Source | n | Accuracy | Macro-F1 | 95% CI |
 | --- | --- | ---: | ---: | ---: | --- |
@@ -80,9 +89,9 @@ the Drive folder, so the existing results sit in the same table as new ones:
 
 Read that table with its caveats, not around them:
 
-* **The intervals overlap almost everywhere.** With 29–47 test items, the six
-  vision-language models are statistically indistinguishable from each other.
-  Rank order between them is not a result.
+* Individual confidence interval overlap does not establish equivalence.
+  Model comparisons require paired predictions and uncertainty for the
+  difference on the same evaluation items.
 * **`published` rows were produced on splits that leak** augmented variants
   across the train/test boundary, so they are optimistic. `data/README.md` has
   the counts.
@@ -96,15 +105,16 @@ Read that table with its caveats, not around them:
 Three things surfaced while building the pipeline, each documented in full in
 [`data/README.md`](data/README.md):
 
-1. **The text is headlines** — median 8 words. This is headline stance
-   classification, and should be described that way.
+1. The matched experiments use headlines as model inputs. Reusing an article
+   label does not establish independent headline stance ground truth.
 2. **The published splits leak.** 25 source articles are shared between train
    and test. `make splits` fixes the ordering; the fix costs ~18 test items.
-3. **Headline and image labels disagree on 53% of items.** That is the
-   motivation for a multimodal treatment rather than a nuisance.
+3. Stored article and image labels agree on 72 of 152 jointly labelled items.
+   Disagreement does not establish that image features improve prediction.
 
-Inter-annotator agreement is κ = 0.73 between the two annotators who labelled
-the full set.
+The saved audit reports rounded pairwise agreement of κ = 0.73 for the two
+annotation columns with 197 jointly labelled items. The third column has much
+lower coverage. Original roles and adjudication still require study records.
 
 ## Evaluation protocol
 

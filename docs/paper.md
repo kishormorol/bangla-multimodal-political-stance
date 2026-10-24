@@ -1,5 +1,19 @@
 # Paper
 
+## Current manuscript and evidence
+
+The current manuscript is `paper/latex/acl_latex.tex`. The root `latex/`
+directory contains an older version and is retained as history. Current
+tables come from `reports/submission/matched.json` and `seeds.json` through
+their respective analysis scripts. The seed comparisons record 86 items,
+whereas the separate matched comparison records 149. See
+[`evidence_status.md`](evidence_status.md) for the checks and missing artifacts.
+
+The sections below retain earlier investigation notes. Their fixed split
+scores and preliminary CV scores are historical snapshots, not the current
+experiment of record. The current implementation already repairs source
+grouping and separates neural validation from the outer test fold.
+
 The manuscript lives in Overleaf:
 https://www.overleaf.com/project/69929902bff33e708abb74d9
 
