@@ -1,0 +1,31 @@
+{
+  "purpose": "New local GPU implementation check using synthetic inputs, not a benchmark result",
+  "source_revision": "2aa4cd978045986c738582a59f0da71e1f871515",
+  "model": "Salesforce/blip-itm-base-coco",
+  "model_revision": "bed8ad38cb2d04a5a4bdf2d071b3c3c0a4aa724c",
+  "source_weights_sha256": "017fb3e7f4e125f13a8a4717f1402dbe0d0bb877474b4a203db13a4447b0227f",
+  "torch": "2.5.1+cu124",
+  "transformers": "4.44.2",
+  "cuda_runtime": "12.4",
+  "device": "NVIDIA GeForce GTX 1650 Ti",
+  "device_total_bytes": 3911581696,
+  "batch_size": 2,
+  "image_size": 384,
+  "synthetic_label": 0,
+  "optimizer_steps": 1,
+  "loss_before_step": 1.1106430292129517,
+  "native_features_equal": true,
+  "changed_image_feature_max_abs_difference": 0.10637473315000534,
+  "changed_image_logit_max_abs_difference": 0.027815017849206924,
+  "cpu_gpu_logit_max_abs_difference": 1.2665987014770508e-07,
+  "cpu_gpu_tolerance": {
+    "absolute": 0.0001,
+    "relative": 0.0001
+  },
+  "frozen_backbone_gradient_absent": true,
+  "classifier_gradient_finite_nonzero": true,
+  "classifier_weights_updated": true,
+  "peak_allocated_bytes": 1028110336,
+  "peak_reserved_bytes": 1138753536,
+  "seconds": 1.216
+}

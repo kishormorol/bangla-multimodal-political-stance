@@ -13,6 +13,8 @@ these files rather than in code.
 
 from __future__ import annotations
 
+import hashlib
+import re
 from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import Any
@@ -102,3 +104,43 @@ class ExperimentConfig:
     @property
     def uses_image(self) -> bool:
         return self.modality in {"image", "multimodal"}
+
+
+def pin_model_revisions(cfg: ExperimentConfig) -> ExperimentConfig:
+    """Resolve remote model references before CV, or hash local checkpoint files."""
+    sources = {}
+    if cfg.pretrained:
+        sources["revision"] = cfg.pretrained
+    if cfg.family == "countvec_vit":
+        sources["vision_revision"] = cfg.params.get(
+            "vision_model", "google/vit-base-patch16-224-in21k"
+        )
+    cfg.params = dict(cfg.params)
+    for key, source in sources.items():
+        directory = Path(source)
+        if directory.is_dir():
+            digest = hashlib.sha256()
+            for path in sorted(directory.rglob("*")):
+                if path.is_file():
+                    digest.update(str(path.relative_to(directory)).encode())
+                    with path.open("rb") as handle:
+                        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                            digest.update(chunk)
+            cfg.params[key] = None
+            cfg.params[f"{key}_local_sha256"] = digest.hexdigest()
+        elif not re.fullmatch(r"[0-9a-f]{40}", str(cfg.params.get(key, ""))):
+            from huggingface_hub import constants, model_info, try_to_load_from_cache
+
+            requested = cfg.params.get(key) or "main"
+            if constants.HF_HUB_OFFLINE:
+                cached = try_to_load_from_cache(source, "config.json", revision=requested)
+                revision = Path(cached).parent.name if isinstance(cached, str) else None
+            else:
+                revision = model_info(source, revision=requested, timeout=30).sha
+            if not revision or not re.fullmatch(r"[0-9a-f]{40}", revision):
+                raise ValueError(
+                    f"could not resolve an immutable model revision for {source}; "
+                    "cache its config online, provide a full revision, or use a local checkpoint"
+                )
+            cfg.params[key] = revision
+    return cfg

@@ -48,7 +48,11 @@ class Scores:
 
 
 def bootstrap_macro_f1(
-    y_true: np.ndarray, y_pred: np.ndarray, rounds: int = 2000, seed: int = 42
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    rounds: int = 2000,
+    seed: int = 42,
+    labels: tuple[str, ...] = LABEL_NAMES,
 ) -> tuple[float, float]:
     """Percentile bootstrap interval for macro-F1, resampling test items."""
     rng = np.random.default_rng(seed)
@@ -56,9 +60,12 @@ def bootstrap_macro_f1(
     if n == 0:
         return (float("nan"), float("nan"))
     samples = np.empty(rounds)
+    label_ids = list(range(len(labels)))
     for i in range(rounds):
         idx = rng.integers(0, n, n)
-        samples[i] = f1_score(y_true[idx], y_pred[idx], average="macro", zero_division=0)
+        samples[i] = f1_score(
+            y_true[idx], y_pred[idx], labels=label_ids, average="macro", zero_division=0
+        )
     return (float(np.percentile(samples, 2.5)), float(np.percentile(samples, 97.5)))
 
 
@@ -78,21 +85,25 @@ def score(
     notes = []
     if len(y_true) < 100:
         notes.append(
-            f"test set is {len(y_true)} items; differences smaller than "
-            "the CI width are not meaningful"
+            f"test set is {len(y_true)} items; use paired uncertainty estimates "
+            "when comparing models"
         )
     if len(set(y_pred.tolist())) == 1:
         notes.append("model predicted a single class for every item (degenerate)")
 
     return Scores(
         accuracy=float(accuracy_score(y_true, y_pred)),
-        macro_f1=float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
+        macro_f1=float(
+            f1_score(y_true, y_pred, labels=label_ids, average="macro", zero_division=0)
+        ),
         weighted_f1=float(f1_score(y_true, y_pred, average="weighted", zero_division=0)),
         per_class_f1={name: float(v) for name, v in zip(labels, per_class, strict=True)},
         support={name: int(v) for name, v in zip(labels, support, strict=True)},
         confusion=confusion_matrix(y_true, y_pred, labels=label_ids).tolist(),
         n=int(len(y_true)),
-        macro_f1_ci95=bootstrap_macro_f1(y_true, y_pred, seed=seed) if bootstrap else None,
+        macro_f1_ci95=(
+            bootstrap_macro_f1(y_true, y_pred, seed=seed, labels=labels) if bootstrap else None
+        ),
         majority_baseline_accuracy=majority,
         notes=notes,
     )

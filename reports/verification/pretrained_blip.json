@@ -1,0 +1,30 @@
+{
+  "purpose": "CPU implementation check on synthetic images and a fixed Bangla sentence, not a benchmark result",
+  "model": "Salesforce/blip-itm-base-coco",
+  "revision": "bed8ad38cb2d04a5a4bdf2d071b3c3c0a4aa724c",
+  "source_weights_sha256": "017fb3e7f4e125f13a8a4717f1402dbe0d0bb877474b4a203db13a4447b0227f",
+  "source_weights_bytes": 895139697,
+  "loading_info": {
+    "missing_keys": [],
+    "unexpected_keys": [],
+    "mismatched_keys": [],
+    "error_msgs": []
+  },
+  "torch": "2.5.1+cpu",
+  "transformers": "4.44.2",
+  "device": "cpu",
+  "threads": 2,
+  "logits_shape": [
+    2,
+    3
+  ],
+  "native_feature_max_abs_difference": 0.0,
+  "changed_image_feature_max_abs_difference": 0.10637522488832474,
+  "changed_image_logit_max_abs_difference": 0.008866406977176666,
+  "frozen_backbone_gradient_absent": true,
+  "classifier_gradient_present": true,
+  "unfrozen_vision_gradient_present": true,
+  "unfrozen_text_gradient_present": true,
+  "all_checked_outputs_and_gradients_finite": true,
+  "seconds": 18.12
+}

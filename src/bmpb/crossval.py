@@ -27,7 +27,11 @@ mean ± standard deviation.
 
 from __future__ import annotations
 
+import hashlib
+import importlib.metadata
 import json
+import sys
+import tempfile
 import time
 from dataclasses import asdict
 from pathlib import Path
@@ -36,15 +40,125 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from bmpb.config import DataConfig, ExperimentConfig
+from bmpb.config import DataConfig, ExperimentConfig, pin_model_revisions
 from bmpb.data.augment import attach, load_published_augmentations
 from bmpb.data.groups import source_groups
 from bmpb.metrics import score
-from bmpb.paths import CORPUS, EXPERIMENTS
+from bmpb.paths import CORPUS, EXPERIMENTS, RAW
 from bmpb.utils.logging import get_logger
 from bmpb.utils.seed import set_seed
 
 log = get_logger(__name__)
+
+
+def execution_identity(
+    config: str | Path | ExperimentConfig, corpus: pd.DataFrame, n_splits: int = 5
+) -> dict:
+    """Identity of the inputs and implementation that determine a CV run."""
+    cfg = (
+        config
+        if isinstance(config, ExperimentConfig)
+        else pin_model_revisions(ExperimentConfig.load(config))
+    )
+    data_cfg = DataConfig.load()
+    frame = corpus.reset_index(drop=True)
+    groups = source_groups(frame, data_cfg.split.get("group_key", "source_index"))
+    folds = make_folds(
+        frame,
+        n_splits=n_splits,
+        group_key=data_cfg.split.get("group_key", "source_index"),
+        seed=cfg.seed,
+    )
+    rows = []
+    group_rows = []
+    for index, row in frame.iterrows():
+        image_hash = None
+        image_path = row.get("image_path")
+        if isinstance(image_path, str) and image_path:
+            path = Path(image_path)
+            if not path.is_absolute():
+                path = RAW / path
+            if path.is_file():
+                image_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+        rows.append(
+            {
+                "item_id": str(row.item_id),
+                "title": str(row.get("title", "")),
+                "text": str(row.get("text", "")),
+                "label": int(row.label),
+                "source_url": str(row.get("source_url", "")),
+                "group": str(groups.iloc[index]),
+                "has_image": bool(row.get("has_image", False)),
+                "image_sha256": image_hash,
+            }
+        )
+        group_rows.append((str(row.item_id), str(groups.iloc[index])))
+    input_sha = hashlib.sha256(
+        json.dumps(rows, sort_keys=True, ensure_ascii=False).encode()
+    ).hexdigest()
+    augmentation_requested = cfg.augment and cfg.params.get(
+        "augment_train", data_cfg.split.get("augment_train", True)
+    )
+    augmentation_rows = []
+    if augmentation_requested:
+        augmentation_rows = load_published_augmentations(frame).to_dict("records")
+    augmentation_sha = hashlib.sha256(
+        json.dumps(augmentation_rows, sort_keys=True, ensure_ascii=False, default=str).encode()
+    ).hexdigest()
+    package_root = Path(__file__).parent
+    code_files = sorted(package_root.rglob("*.py")) + [
+        Path(__file__).parents[2] / "scripts/run_matched_sweep.py"
+    ]
+    code_hash = hashlib.sha256()
+    for path in code_files:
+        if path.is_file():
+            code_hash.update(
+                str(
+                    path.relative_to(package_root.parent.parent)
+                    if path.is_relative_to(package_root.parent.parent)
+                    else path.name
+                ).encode()
+            )
+            code_hash.update(path.read_bytes())
+    packages = {}
+    for name in (
+        "bmpb",
+        "numpy",
+        "pandas",
+        "scikit-learn",
+        "torch",
+        "torchvision",
+        "transformers",
+        "tokenizers",
+        "datasets",
+        "safetensors",
+        "Pillow",
+        "huggingface-hub",
+        "scipy",
+        "normalizer",
+        "accelerate",
+        "sentencepiece",
+    ):
+        try:
+            packages[name] = importlib.metadata.version(name)
+        except importlib.metadata.PackageNotFoundError:
+            packages[name] = None
+    return {
+        "config": asdict(cfg),
+        "seed": cfg.seed,
+        "n_splits": n_splits,
+        "fold_item_ids": [[str(frame.iloc[i]["item_id"]) for i in fold] for fold in folds],
+        "input_sha256": input_sha,
+        "group_membership_sha256": hashlib.sha256(
+            json.dumps(group_rows, ensure_ascii=False).encode()
+        ).hexdigest(),
+        "augmentation_requested": bool(augmentation_requested),
+        "augmentation_enabled": bool(augmentation_rows),
+        "augmentation_count": len(augmentation_rows),
+        "augmentation_sha256": augmentation_sha,
+        "code_sha256": code_hash.hexdigest(),
+        "software": {"python": sys.version, **packages},
+    }
 
 
 def make_folds(
@@ -111,7 +225,7 @@ def cross_validate(
     corpus: pd.DataFrame | None = None,
     require_image: bool | None = None,
 ) -> dict:
-    cfg = ExperimentConfig.load(config)
+    cfg = pin_model_revisions(ExperimentConfig.load(config))
     from bmpb.train import SKLEARN_FAMILIES, git_commit
 
     data_cfg = DataConfig.load()
@@ -135,6 +249,8 @@ def cross_validate(
     if needs_image:
         corpus = corpus[corpus["has_image"].astype(bool)].reset_index(drop=True)
         population = "items with an image"
+    identity = execution_identity(cfg, corpus, n_splits)
+    frozen_groups = source_groups(corpus, data_cfg.split.get("group_key", "source_index"))
     log.info("%s: %d %s, %d folds", cfg.name, len(corpus), population, n_splits)
 
     folds = make_folds(
@@ -182,12 +298,20 @@ def cross_validate(
         frame, predicted, _ = _fit_predict(cfg, train, test, val)
         truth = frame["label"].to_numpy()
         fold_scores = score(truth, predicted, bootstrap=False)
+        augmentation_item_ids = (
+            train.loc[train["is_augmented"].fillna(False).astype(bool), "item_id"]
+            .astype(str)
+            .tolist()
+            if "is_augmented" in train
+            else []
+        )
         per_fold.append(
             {
                 "fold": index,
                 "n_train": len(train),
                 "n_val": len(val) if val is not None else 0,
                 "n_test": len(frame),
+                "augmentation_item_ids": augmentation_item_ids,
                 "accuracy": fold_scores.accuracy,
                 "macro_f1": fold_scores.macro_f1,
             }
@@ -199,6 +323,7 @@ def cross_validate(
                     "label": truth,
                     "predicted": predicted,
                     "fold": index,
+                    "group": frozen_groups.iloc[test_idx].to_numpy(),
                 }
             )
         )
@@ -233,14 +358,22 @@ def cross_validate(
     for note in overall.notes:
         log.warning("  note: %s", note)
 
-    directory = Path(out) / f"cv-{cfg.name}-{time.strftime('%Y%m%d-%H%M%S')}"
-    directory.mkdir(parents=True, exist_ok=True)
+    output_dir = Path(out)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    directory = Path(
+        tempfile.mkdtemp(
+            prefix=f"cv-{cfg.name}-{time.strftime('%Y%m%d-%H%M%S')}-",
+            dir=output_dir,
+        )
+    )
     predictions.to_csv(directory / "predictions.csv", index=False)
     (directory / "config.yaml").write_text(
         yaml.safe_dump(asdict(cfg), sort_keys=False), encoding="utf-8"
     )
 
     summary = {
+        "run_dir": str(directory),
+        "identity": identity,
         "name": cfg.name,
         "modality": cfg.modality,
         "family": cfg.family,
@@ -272,6 +405,16 @@ def cross_validate(
         "seconds": round(time.time() - started, 1),
     }
     (directory / "cv.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    artifacts = {}
+    for name in ("config.yaml", "predictions.csv", "cv.json"):
+        artifacts[name] = hashlib.sha256((directory / name).read_bytes()).hexdigest()
+    manifest = directory / "run.json"
+    temporary = manifest.with_suffix(".json.tmp")
+    temporary.write_text(
+        json.dumps({"identity": identity, "artifacts": artifacts}, indent=2),
+        encoding="utf-8",
+    )
+    temporary.replace(manifest)
     log.info("wrote %s", directory)
     return summary
 

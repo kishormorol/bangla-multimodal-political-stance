@@ -76,8 +76,9 @@ def countvec_vit(cfg: ExperimentConfig):
     from transformers import AutoImageProcessor, AutoModel
 
     vision_name = cfg.params.get("vision_model", "google/vit-base-patch16-224-in21k")
-    processor = AutoImageProcessor.from_pretrained(vision_name)
-    vision = AutoModel.from_pretrained(vision_name)
+    revision = cfg.params.get("vision_revision")
+    processor = AutoImageProcessor.from_pretrained(vision_name, revision=revision)
+    vision = AutoModel.from_pretrained(vision_name, revision=revision)
     vision.eval()
     for param in vision.parameters():
         param.requires_grad = False

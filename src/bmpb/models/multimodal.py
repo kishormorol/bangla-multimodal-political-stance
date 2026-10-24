@@ -34,8 +34,9 @@ def clip_like(cfg: ExperimentConfig):
 
     from bmpb.models.heads import FusionClassifier
 
-    processor = AutoProcessor.from_pretrained(cfg.pretrained)
-    backbone = AutoModel.from_pretrained(cfg.pretrained)
+    revision = cfg.params.get("revision")
+    processor = AutoProcessor.from_pretrained(cfg.pretrained, revision=revision)
+    backbone = AutoModel.from_pretrained(cfg.pretrained, revision=revision)
 
     class DualEncoderClassifier(torch.nn.Module):
         def __init__(self) -> None:
@@ -81,10 +82,25 @@ def fusion_encoder(cfg: ExperimentConfig):
     `max_length` accordingly rather than the code guessing.
     """
     import torch
-    from transformers import AutoModel, AutoProcessor
+    from transformers import AutoConfig, AutoModel, AutoProcessor
 
-    processor = AutoProcessor.from_pretrained(cfg.pretrained)
-    backbone = AutoModel.from_pretrained(cfg.pretrained)
+    revision = cfg.params.get("revision")
+    model_config = AutoConfig.from_pretrained(cfg.pretrained, revision=revision)
+    is_blip = model_config.model_type == "blip"
+    processor = AutoProcessor.from_pretrained(cfg.pretrained, revision=revision)
+    if is_blip:
+        from transformers import BlipForImageTextRetrieval
+
+        if (
+            model_config.architectures
+            and "BlipForImageTextRetrieval" not in model_config.architectures
+        ):
+            raise ValueError("BLIP fusion requires a BlipForImageTextRetrieval checkpoint")
+        backbone = BlipForImageTextRetrieval.from_pretrained(
+            cfg.pretrained, config=model_config, revision=revision
+        )
+    else:
+        backbone = AutoModel.from_pretrained(cfg.pretrained, config=model_config, revision=revision)
 
     class FusedClassifier(torch.nn.Module):
         def __init__(self) -> None:
@@ -93,15 +109,22 @@ def fusion_encoder(cfg: ExperimentConfig):
             if cfg.freeze_encoder:
                 for param in self.backbone.parameters():
                     param.requires_grad = False
-            hidden = cfg.params.get("hidden_size") or _hidden_size(backbone.config)
+            if is_blip:
+                hidden = backbone.config.text_config.hidden_size
+            else:
+                hidden = cfg.params.get("hidden_size") or _hidden_size(backbone.config)
             self.dropout = torch.nn.Dropout(0.1)
             self.classifier = torch.nn.Linear(hidden, cfg.num_labels)
 
         def forward(self, labels=None, **inputs):
+            if is_blip:
+                pooled = _blip_multimodal_features(self.backbone, **inputs)
+                return {"logits": self.classifier(self.dropout(pooled))}
+
             outputs = self.backbone(**inputs)
             pooled = getattr(outputs, "pooler_output", None)
             if pooled is None:
-                # BLIP returns BlipOutput — extract [CLS] from the text sub-model.
+                # Some outputs expose the text-model state separately.
                 text_out = getattr(outputs, "text_model_output", None)
                 if text_out is not None:
                     pooled = text_out.last_hidden_state[:, 0]
@@ -113,6 +136,21 @@ def fusion_encoder(cfg: ExperimentConfig):
             return {"logits": self.classifier(self.dropout(pooled))}
 
     return FusedClassifier(), processor
+
+
+def _blip_multimodal_features(backbone, input_ids, attention_mask, pixel_values, **_):
+    """Pool BLIP text after its image cross-attention layers."""
+    import torch
+
+    image_embeds = backbone.vision_model(pixel_values=pixel_values)[0]
+    image_mask = torch.ones(image_embeds.shape[:-1], dtype=torch.long, device=image_embeds.device)
+    text_outputs = backbone.text_encoder(
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        encoder_hidden_states=image_embeds,
+        encoder_attention_mask=image_mask,
+    )
+    return text_outputs[0][:, 0]
 
 
 def _hidden_size(config) -> int:

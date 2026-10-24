@@ -15,9 +15,10 @@ def hf_text_classifier(cfg: ExperimentConfig):
     """
     from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-    tokenizer = AutoTokenizer.from_pretrained(cfg.pretrained)
+    revision = cfg.params.get("revision")
+    tokenizer = AutoTokenizer.from_pretrained(cfg.pretrained, revision=revision)
     model = AutoModelForSequenceClassification.from_pretrained(
-        cfg.pretrained, num_labels=cfg.num_labels
+        cfg.pretrained, num_labels=cfg.num_labels, revision=revision
     )
     if cfg.freeze_encoder:
         for name, param in model.named_parameters():
@@ -39,15 +40,17 @@ def hf_seq2seq_classifier(cfg: ExperimentConfig):
     if cfg.params.get("as_generator"):
         from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-        tokenizer = AutoTokenizer.from_pretrained(cfg.pretrained)
-        return AutoModelForSeq2SeqLM.from_pretrained(cfg.pretrained), tokenizer
+        revision = cfg.params.get("revision")
+        tokenizer = AutoTokenizer.from_pretrained(cfg.pretrained, revision=revision)
+        return AutoModelForSeq2SeqLM.from_pretrained(cfg.pretrained, revision=revision), tokenizer
 
     from transformers import AutoTokenizer, T5EncoderModel
 
     from bmpb.models.heads import EncoderClassifier
 
-    tokenizer = AutoTokenizer.from_pretrained(cfg.pretrained)
-    encoder = T5EncoderModel.from_pretrained(cfg.pretrained)
+    revision = cfg.params.get("revision")
+    tokenizer = AutoTokenizer.from_pretrained(cfg.pretrained, revision=revision)
+    encoder = T5EncoderModel.from_pretrained(cfg.pretrained, revision=revision)
     model = EncoderClassifier(
         encoder=encoder,
         hidden_size=encoder.config.d_model,

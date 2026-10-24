@@ -10,15 +10,13 @@ independent.
 """
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score
-
-from bmpb.data.groups import source_groups
-from bmpb.paths import CORPUS
 
 TEXT_REFERENCES = ["tfidf_logreg", "banglabert"]
 MULTIMODAL = ["countvec_vit", "clip", "align", "blip", "vilt", "flava"]
@@ -31,19 +29,61 @@ def macro_f1(y_true, y_pred):
 
 
 def predictions(root: Path, population: str, name: str) -> pd.DataFrame:
-    runs = sorted((root / population).glob(f"cv-{name}-*/predictions.csv"))
-    if not runs:
-        raise FileNotFoundError(f"no predictions for {population}/{name}")
-    return pd.read_csv(runs[-1])
+    summary = json.loads((root / "sweep_summary.json").read_text(encoding="utf-8"))
+    rows = [r for r in summary if r.get("population") == population and r.get("name") == name]
+    if len(rows) != 1:
+        raise ValueError(f"expected one summary row for {population}/{name}, found {len(rows)}")
+    row = rows[0]
+    if row.get("status") != "ok" or not row.get("identity") or not row.get("run_dir"):
+        raise ValueError(
+            f"{population}/{name} lacks current run identity metadata; historical inspection only"
+        )
+    run = (root / row["run_dir"]).resolve()
+    if not run.is_relative_to(root.resolve()):
+        raise ValueError(f"run path escapes sweep root for {population}/{name}")
+    manifest_path = run / "run.json"
+    prediction_path = run / "predictions.csv"
+    cv_path = run / "cv.json"
+    if not all(path.is_file() for path in (manifest_path, prediction_path, cv_path)):
+        raise FileNotFoundError(
+            f"required exact run artifacts missing for {population}/{name}: {run}"
+        )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    cv = json.loads(cv_path.read_text(encoding="utf-8"))
+    config_path = run / "config.yaml"
+    artifacts = manifest.get("artifacts", {})
+    if not config_path.is_file() or any(
+        artifacts.get(path.name) != hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in (config_path, prediction_path, cv_path)
+    ):
+        raise ValueError(f"run artifact checksum mismatch for {population}/{name}")
+    if (
+        manifest.get("identity") != row["identity"]
+        or cv.get("identity") != row["identity"]
+        or cv.get("name") != name
+        or cv.get("seed") != row.get("seed")
+    ):
+        raise ValueError(f"run manifest mismatch for {population}/{name}")
+    for field, value in cv.items():
+        if field not in {"population", "run_dir"} and row.get(field) != value:
+            raise ValueError(
+                f"summary disagrees with verified run field {field}: {population}/{name}"
+            )
+    frame = pd.read_csv(prediction_path)
+    if frame.item_id.duplicated().any() or len(frame) != row.get("items_scored"):
+        raise ValueError(f"prediction artifact does not match run summary for {population}/{name}")
+    return frame
 
 
-def paired_difference(a: pd.DataFrame, b: pd.DataFrame, groups: pd.Series) -> dict:
+def paired_difference(a: pd.DataFrame, b: pd.DataFrame) -> dict:
     merged = a.merge(b, on=["item_id", "label"], suffixes=("_a", "_b"))
     if len(merged) != len(a) or len(merged) != len(b):
         raise AssertionError("paired comparison requires identical item populations")
     if not (merged["fold_a"] == merged["fold_b"]).all():
         raise AssertionError("paired comparison requires identical outer folds")
-    merged["group"] = merged["item_id"].map(groups)
+    if "group_a" not in merged or not (merged["group_a"] == merged["group_b"]).all():
+        raise AssertionError("paired comparison requires identical frozen groups")
+    merged["group"] = merged["group_a"]
     observed = macro_f1(merged.label, merged.predicted_a) - macro_f1(
         merged.label, merged.predicted_b
     )
@@ -121,6 +161,25 @@ def main():
     args = parser.parse_args()
 
     summary = json.loads((args.root / "sweep_summary.json").read_text())
+    for row in summary:
+        if row.get("status") == "ok":
+            predictions(args.root, row["population"], row["name"])
+    for population in {r.get("population") for r in summary}:
+        rows = [r for r in summary if r.get("population") == population and r.get("status") == "ok"]
+        contracts = {
+            json.dumps(
+                {
+                    key: r.get("identity", {}).get(key)
+                    for key in ("input_sha256", "seed", "n_splits", "fold_item_ids")
+                },
+                sort_keys=True,
+            )
+            for r in rows
+        }
+        if rows and (
+            any(not r.get("identity", {}).get("input_sha256") for r in rows) or len(contracts) > 1
+        ):
+            raise ValueError(f"mixed or missing run populations in {population}")
     lines = [
         "| Population | Model | Status | n | Accuracy | Pooled macro-F1 | 95% CI | "
         "Fold mean ± SD | F1 gc | F1 neu | F1 gl | Notes |",
@@ -143,8 +202,6 @@ def main():
             f"{'; '.join(row['notes'])} |"
         )
 
-    corpus = pd.read_csv(CORPUS)
-    groups = pd.Series(source_groups(corpus).to_numpy(), index=corpus["item_id"])
     ok = {(r["population"], r["name"]) for r in summary if r["status"] == "ok"}
     comparisons = []
     for model in MULTIMODAL:
@@ -155,7 +212,6 @@ def main():
             result = paired_difference(
                 predictions(args.root, "paired_headlines", model),
                 predictions(args.root, "paired_headlines", reference),
-                groups,
             )
             comparisons.append({"model": model, "reference": reference, **result})
 

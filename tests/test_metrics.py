@@ -26,7 +26,7 @@ def test_single_class_prediction_is_flagged():
 
 def test_small_test_set_is_flagged():
     scores = score([0, 1, 2] * 10, [0, 1, 2] * 10, bootstrap=False)
-    assert any("not meaningful" in note for note in scores.notes)
+    assert any("paired uncertainty" in note for note in scores.notes)
 
 
 def test_majority_baseline_is_reported():
