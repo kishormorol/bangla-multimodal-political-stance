@@ -53,8 +53,10 @@ tests reproduce and prevent the original leakage. Image_29's source URL has been
 corrected to the verified [Prothom Alo article](https://www.prothomalo.com/business/economics/7p5t31msj0),
 whose headline matches upstream ID 160. Its labels and image mapping are unchanged;
 `source_url_original` retains the old URL. Image_154/Image_155 remain in one group.
-The baseline reruns are recorded in `reports/submission/baselines.md`; historical
-neural scores still require rerunning.
+The baseline reruns are recorded in `reports/submission/baselines.md`.
+The subsequent [matched report](../reports/submission/matched.json) records
+149 paired items. The separate [seed report](../reports/submission/seeds.json)
+records 86 paired items. Compare their populations before comparing scores.
 
 ## Supported manuscript wording
 

@@ -32,7 +32,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.5", "black>=24.0", "pre-commit>=3.7"]
 viz = ["matplotlib>=3.8", "seaborn>=0.13"]
-fetch = ["gdown>=5.1"]
+fetch = ["gdown>=6.3"]
 
 [project.scripts]
 bmpb = "bmpb.cli:app"

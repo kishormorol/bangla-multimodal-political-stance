@@ -19,8 +19,6 @@ tags:
 - bangladesh
 - nlp
 - vision-language
-size_categories:
-- 10K<n<100K
 pretty_name: "BanglaPoliticalStance: Bangla Multimodal Political Stance Detection Dataset"
 dataset_info:
   features:
@@ -39,12 +37,7 @@ dataset_info:
   - name: section
     dtype: string
   - name: label
-    dtype:
-      class_label:
-        names:
-          '0': govt_critique
-          '1': neutral
-          '2': govt_leaning
+    dtype: int32
   splits:
   - name: annotated
     num_examples: 198
@@ -69,11 +62,20 @@ citation: |
 
 # BanglaPoliticalStance
 
-A large-scale Bangla multimodal dataset for political stance detection, containing **14,719 news items** (headlines + photos) from **392 Bangladeshi news outlets**.
+This dataset repository contains an annotated corpus split and a scraped
+unannotated split. The published card snapshot lists 198 annotated rows and
+14,521 unannotated rows. The local build reports counts and image coverage
+from its current source files; these can differ from the published snapshot.
 
 ## Dataset Summary
 
-BanglaPoliticalStance is the first large-scale multimodal Bangla political stance detection dataset. Each item consists of a news headline in Bangla and its accompanying photograph, collected from major Bangladeshi news portals. The dataset supports three-way stance classification:
+The annotated source is a processed table with separate `title` and `text`
+fields and a numeric final label. The unannotated source is a scraped table
+with a `headline` field and no stance label. During export, `headline` is
+populated from `title` when that column exists in the annotated table; `text`
+is used only when the `title` column is absent. The unannotated `headline` is
+copied as provided. This does not establish that the annotated labels were
+assigned from headlines alone. The label IDs are:
 
 | Label | ID | Description |
 |---|---:|---|
@@ -85,11 +87,22 @@ BanglaPoliticalStance is the first large-scale multimodal Bangla political stanc
 
 The dataset has two splits:
 
-### `annotated` (198 items)
-Expert-annotated by 3 human annotators with inter-annotator agreement of κ=0.73 (Cohen's kappa between the two primary annotators). These items include gold-standard labels for benchmarking.
+### `annotated`
+The published card snapshot has 198 rows. These come from the processed
+annotated table. Each row must have a unique item ID and a valid numeric stance
+label (0, 1, or 2). The export preserves the stored label ID. The local
+provenance audit found consistent upstream matches for 145 processed rows and
+no exact normalized match for 53 rows. The unmatched rows are not thereby
+established as independently collected. See
+[the repository provenance audit](https://github.com/kishormorol/bangla-multimodal-political-stance/blob/a935d118dd843cb40ed14bfeaa2a958c1e0ce111/docs/dataset-provenance.md) for the audit and
+its limits. The stored annotation columns cover 32, 197, and 197 of 198 items.
+The saved audit reports rounded pairwise Cohen's kappa of 0.73 for the
+two columns with 197 jointly labelled items. Original annotator roles,
+instructions, and final label selection require further study records.
 
-### `unannotated` (14,521 items)
-Recently collected headlines and images from 392 Bangla news outlets, ready for annotation. These items do not have stance labels yet.
+### `unannotated`
+The published card snapshot has 14,521 rows. These come from the scraped table
+and are provided as unlabeled input.
 
 **We welcome community contributions to annotate this data.**
 
@@ -97,41 +110,14 @@ Recently collected headlines and images from 392 Bangla news outlets, ready for 
 
 | Feature | Type | Description |
 |---|---|---|
-| `item_id` | string | Unique identifier (MD5 hash of URL) |
-| `headline` | string | News headline in Bangla (median ~8 words) |
+| `item_id` | string | `Image_N` identifier in the original annotated corpus; scraped IDs use the collection script's 12-character MD5 URL hash |
+| `headline` | string | `title` in the annotated source when present, otherwise `text`; scraped `headline` in the unannotated source |
 | `source_url` | string | Original article URL |
 | `outlet` | string | News outlet name |
 | `image` | image | Accompanying news photograph |
 | `date` | string | Publication date (when available) |
 | `section` | string | News section (politics, national, etc.) |
-| `label` | ClassLabel | Stance label (annotated split only) |
-
-## Source Outlets (Top 20)
-
-| Outlet | Articles |
-|---|---:|
-| The Daily Star | 996 |
-| Prothom Alo | 604 |
-| Bangladesh Sangbad Sangstha (BSS) | 464 |
-| BBC Bangla | 230 |
-| Jugantor | 182 |
-| Bangladesh Pratidin | 166 |
-| Daily Ittefaq | 142 |
-| The Business Standard | 118 |
-| Jago News | 112 |
-| bdnews24 | 102 |
-| Samakal | 82 |
-| Kaler Kantho | 79 |
-| Naya Diganta | 74 |
-| Ajker Patrika | 71 |
-| Bangla Tribune | 67 |
-| NTV | 65 |
-| Risingbd | 64 |
-| Dhaka Post | 96 |
-| Dhaka Mail | 99 |
-| Daily Inqilab | 98 |
-
-...and 370+ more outlets.
+| `label` | int32 | Numeric stance ID (annotated split); `-1` marks unannotated rows |
 
 ## Important Notes
 
@@ -139,9 +125,9 @@ Recently collected headlines and images from 392 Bangla news outlets, ready for 
 
 2. **Label IDs are frozen.** `0 = govt_critique, 1 = neutral, 2 = govt_leaning`. Do not renumber.
 
-3. **Image-text stance can differ.** In the annotated subset, article-level and image-level labels agree on only 47.4% of items — the photo often carries a different stance from the headline. This gap is the core argument for multimodal approaches.
+3. **Images may be absent.** Export checks local image files and decodability. Missing or unreadable files are represented as null; the build output reports included, missing, and decode-failed image counts for each split.
 
-4. **The annotated split has class imbalance.** `govt_critique` (103) > `neutral` (53) > `govt_leaning` (42). This reflects the real distribution and should not be artificially balanced for evaluation.
+4. **Provenance and rights are not fully established.** The provenance audit identifies reused upstream items. This repository does not assert redistribution rights for outlet headlines or photographs. Check source terms and permissions before reuse.
 
 ## Usage
 
@@ -160,23 +146,12 @@ print(ds[0]["label"])     # 0, 1, or 2
 ds[0]["image"].show()     # PIL Image
 ```
 
-## Citation
+## License and reuse
 
-If you use this dataset, please cite:
-
-```bibtex
-@dataset{bangla_political_stance_2026,
-  title={BanglaPoliticalStance: A Large-Scale Bangla Multimodal Political Stance Detection Dataset},
-  author={Kishor Morol},
-  year={2026},
-  url={https://huggingface.co/datasets/kishormorol/BanglaPoliticalStance},
-  note={14,719 Bangla news headlines with photographs from 392 outlets}
-}
-```
-
-## License
-
-The annotations and metadata are released under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). The headlines and photographs belong to their respective news outlets — `source_url` records the provenance of each item. Please check each outlet's terms before redistributing article text or images.
+The annotations and metadata are released under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+The headlines and photographs belong to their respective news outlets;
+`source_url` records provenance, not permission. Check outlet terms before
+redistributing article text or images.
 
 ## Contributing
 

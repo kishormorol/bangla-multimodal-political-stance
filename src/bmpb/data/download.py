@@ -9,22 +9,19 @@ is committed to git — run this once after cloning.
 
 Why this is not a one-line `gdown --folder` call
 ------------------------------------------------
-The folder contains a Google Doc ("Code"). Docs have no binary download
-endpoint, so gdown's recursive walk fails when it reaches that entry and takes
-the whole listing down with it — including the image folders it had not visited
-yet. The error message is the misleading "Cannot retrieve the public link … or
-have had many accesses", which looks like rate limiting and is not.
-
-So each folder is fetched separately, by id, and a failure in one is reported
-without aborting the others. Google *does* also rate-limit bulk downloads, and
-that failure looks identical; in that case the download resumes, so re-running
-picks up only what is missing.
+The folder contains a Google Doc ("Code"). A recursive download fails when it
+tries to download that document. The top-level listing therefore uses
+`skip_download` and downloads only its direct CSV files; image folders are
+fetched separately by their IDs. A failure in one folder is reported without
+aborting the others. Google can rate-limit bulk downloads, so re-running resumes
+incomplete transfers and skips completed files.
 """
 
 from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
 from bmpb.config import DataConfig
 from bmpb.paths import RAW, ensure_dirs
@@ -54,8 +51,62 @@ def download_folder(folder_id: str, destination, label: str) -> bool:
             output=str(destination),
             quiet=False,
             use_cookies=False,
+            resume=True,
+            timeout=30,
         )
         return True
+    except Exception as error:  # noqa: BLE001 - one folder failing must not stop the rest
+        log.warning("%s did not complete: %s", label, type(error).__name__)
+        log.warning(
+            "  this is usually Google throttling a bulk download. The transfer resumes, "
+            "so re-run `bmpb data` in a few minutes to pick up the rest."
+        )
+        return False
+
+
+def download_csv_files(folder_id: str, destination, label: str) -> bool:
+    """List a Drive folder and download only its top-level CSV files."""
+    gdown = _gdown()
+    destination.mkdir(parents=True, exist_ok=True)
+    destination = destination.resolve()
+    log.info("fetching %s -> %s", label, destination)
+    try:
+        files = gdown.download_folder(
+            url=FOLDER_URL.format(folder_id),
+            output=str(destination),
+            quiet=False,
+            use_cookies=False,
+            skip_download=True,
+            timeout=30,
+        )
+        failed = False
+        for file in files:
+            relative_path = Path(file.path)
+            target = (destination / relative_path).resolve()
+            local_path = Path(file.local_path).resolve()
+            if not target.is_relative_to(destination) or not local_path.is_relative_to(destination):
+                log.warning("%s returned a path outside %s", label, destination)
+                return False
+            if relative_path.suffix.lower() != ".csv" or len(relative_path.parts) != 1:
+                continue
+            try:
+                downloaded = gdown.download(
+                    id=file.id,
+                    output=str(target),
+                    quiet=False,
+                    use_cookies=False,
+                    resume=True,
+                    timeout=30,
+                )
+                if downloaded is None:
+                    failed = True
+                    log.warning("%s file %s did not complete", label, relative_path)
+            except Exception as error:  # noqa: BLE001 - continue with other CSV files
+                failed = True
+                log.warning(
+                    "%s file %s did not complete: %s", label, relative_path, type(error).__name__
+                )
+        return not failed
     except Exception as error:  # noqa: BLE001 - one folder failing must not stop the rest
         log.warning("%s did not complete: %s", label, type(error).__name__)
         log.warning(
@@ -68,12 +119,12 @@ def download_folder(folder_id: str, destination, label: str) -> bool:
 def download(cfg: DataConfig, images: bool = True) -> dict[str, int]:
     ensure_dirs()
 
-    # The top-level walk is what trips over the Google Doc, so when the image
-    # folders are addressed by their own ids we never ask gdown to recurse.
+    # List the root without downloading; only top-level CSV entries are files
+    # we need from it. Image subfolders are fetched separately by their IDs.
     have_subfolder_ids = bool(cfg.drive_image_folder_id and cfg.drive_processed_image_folder_id)
 
     if have_subfolder_ids:
-        download_folder(cfg.drive_folder_id, RAW, "CSVs (top-level folder)")
+        download_csv_files(cfg.drive_folder_id, RAW, "CSVs (top-level folder)")
         if images:
             download_folder(cfg.drive_image_folder_id, RAW / cfg.image_dir, "images/")
             download_folder(
@@ -81,13 +132,15 @@ def download(cfg: DataConfig, images: bool = True) -> dict[str, int]:
                 RAW / cfg.processed_image_dir,
                 "processed_images/",
             )
-    else:
+    elif images:
         log.warning(
             "drive_image_folder_id / drive_processed_image_folder_id are not set in "
             "data.yaml; falling back to a recursive walk, which fails on the Google Doc "
             "in this folder"
         )
         download_folder(cfg.drive_folder_id, RAW, "whole folder")
+    else:
+        download_csv_files(cfg.drive_folder_id, RAW, "CSVs (top-level folder)")
 
     counts = {
         "csv": len(list(RAW.glob("*.csv"))),

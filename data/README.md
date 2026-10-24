@@ -1,5 +1,12 @@
 # Dataset
 
+The counts and fixed split descriptions below include historical snapshots.
+The committed matched report later records 149 items with readable images,
+while the separate seed comparisons record 86. Image availability depends on
+the input snapshot and decoding environment. Check the populations in
+[`matched.json`](../reports/submission/matched.json) and
+[`seeds.json`](../reports/submission/seeds.json) before comparing scores.
+
 Nothing in `data/` is committed. Run `make data` (or `bash scripts/fetch_data.sh`)
 to mirror the shared Drive folder into `data/raw/`, then `make ingest && make splits`.
 
@@ -100,10 +107,10 @@ Three annotators, with uneven coverage — Annotator 1 labelled 32 of 198 items:
 agreement and is the number worth reporting; the Annotator 1 pairs rest on 32
 items and should be described as such rather than averaged in.
 
-Article-level and image-level labels agree on only **47.4%** of the 152 items
-labelled both ways — the photo carries a different stance from the headline
-about half the time. That gap is the argument for the multimodal framing, and it
-is a finding rather than a data problem.
+Stored article and image labels agree on 72 of 152 jointly labelled items,
+or 47.4 percent. The statistic describes the stored judgments. It does not
+establish headline ground truth, correct image pairing, or a predictive
+benefit from image features.
 
 ## Raw file inventory
 
