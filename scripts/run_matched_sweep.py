@@ -71,7 +71,10 @@ def check_frozen(frames, wanted):
 
 def digest(frame):
     columns = ["item_id", "text", "label", "source_url"]
-    return hashlib.sha256(frame[columns].to_csv(index=False).encode()).hexdigest()
+    # Fixed "\n": pandas defaults to os.linesep, which would make the checksum
+    # differ between Windows and the Linux GPU runs that produced FROZEN.
+    text = frame[columns].to_csv(index=False, lineterminator="\n")
+    return hashlib.sha256(text.encode()).hexdigest()
 
 
 def main():
