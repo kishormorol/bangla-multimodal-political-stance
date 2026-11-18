@@ -37,6 +37,22 @@ equal tfidf_logreg's); ruff clean on changed files; analysis scripts smoke-run
 on the old seeds. No ablation run has happened; the ViT path is untested
 locally (HF CDN blocked here).
 
+Data restored (later, same session): the published run's bundle came from the
+private Kaggle kernel bmpb-matched-sweep (author authorised use of their Kaggle
+account). With Unix line endings it matches both frozen checksums; the earlier
+mismatch was partly pandas writing CRLF on Windows (digest now fixed) and
+partly a genuinely changed local corpus (f35e00..), backed up untracked in
+experiments/data-local-backup-20261118/. data/ now holds the bundle's data.
+Seed-42 majority/TF-IDF reproduce matched.json exactly (0.217/0.543 on 149,
+0.228/0.496 on 198). The author must decide whether the changed local corpus
+matters (what changed is not yet diagnosed).
+GPU: Kaggle weekly GPU quota is exhausted (45/45 h), so the seed kernels
+(notebooks/kaggle_seed_sweep.py; private dataset kishormorol/bmpb-seeds149-bundle,
+to delete after the run) were refused. The local RTX 3050 is busy with other
+processes. The bundle (code at c16166a + data) was copied to
+MyDrive/bmpb/seeds149/bmpb-bundle.tar.gz, and notebooks/run_seeds149_colab.ipynb
+now unpacks it instead of using HuggingFace (which has only 87 photos).
+
 Verified: PDF compiles with 0 errors, 0 overfull boxes. Checked by hand that
 every paired_headlines seed run has items_scored 86 and seeds.json paired
 differences have n 86 (grep over experiments/seeds/ and reports/submission/).
