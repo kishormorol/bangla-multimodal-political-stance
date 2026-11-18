@@ -1,3 +1,37 @@
+## 2026-11-18 · Claude (Opus 5.5 + Fable 5.2 reviewer, Claude Code) · agent/review-presubmission
+
+Done: pre-submission review. Fixed the seed-stability table (header had 5 cols
+for 6-col rows; 13 LaTeX errors) and corrected abstract/discussion seed claims
+to match seeds.md (commit 1c5ac96). Two independent agent reviews (number audit;
+Fable 5.2 reviewer) — not a human review, so the `review` step is not done.
+
+Verified: PDF compiles with 0 errors, 0 overfull boxes. Checked by hand that
+every paired_headlines seed run has items_scored 86 and seeds.json paired
+differences have n 86 (grep over experiments/seeds/ and reports/submission/).
+
+Not verified / open — BLOCKING:
+- The five-seed results (abstract 0.562, 0.402, -0.192..-0.277, 3-5/5 counts;
+  Tables seed_stability/seed_diff) are on n=86, not 149. The Colab bundle had
+  only 86 decodable images; run_matched_sweep.py defines the paired population
+  as "images load_image can decode". The paper states 149 throughout.
+- matched.json "seed 42" (Kaggle) and seeds.json seed 42 (Colab) differ in
+  population and folds, even on 198 items (input sha 94765d.. vs 200ff2..).
+- Unsourced numbers: median 8 words, 127 bodies/71 headlines, 20 augmented test
+  rows, 63.2%, 114 variants, appendix tables (no % source).
+- matched.json runs have git_commit null.
+
+Needs the author:
+1. (Correction, required) Rerun seeds 42-46 on the pinned 149 item IDs with an
+   asserted n and checksum; regenerate Tables 1-2 from that same sweep.
+2. (Design change, author decides) image ablation within VL models
+   (real/blank/shuffled image); TF-IDF+image-features vs TF-IDF; image-only
+   baseline. Otherwise narrow the "adding the photograph" claim.
+3. (Optional) fixed-epoch BanglaBERT/mBERT check; matched zero-shot VLM row;
+   expand related work.
+4. A human co-author or colleague review.
+
+Suggested: none yet — `experiments` is not done until item 1 is resolved.
+
 ## 2026-10-12 · Claude (Opus 5.5, Claude Code) · agent/experiments-grouped-evaluation (seeds)
 
 Done: the author asked for a multi-seed rerun on Colab. Added `--seed` to
