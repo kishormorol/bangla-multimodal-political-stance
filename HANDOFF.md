@@ -5,6 +5,18 @@ for 6-col rows; 13 LaTeX errors) and corrected abstract/discussion seed claims
 to match seeds.md (commit 1c5ac96). Two independent agent reviews (number audit;
 Fable 5.2 reviewer) — not a human review, so the `review` step is not done.
 
+Done (later, same session): scripts/run_matched_sweep.py now refuses to run
+unless both populations match the published checksums (149 items 6d2b0d7a..,
+198 items 94765d30..); --unpinned bypasses it for exploratory runs only. Added
+notebooks/run_seeds149_colab.ipynb (clones this branch, saves to
+MyDrive/bmpb/seeds149, cell 4b gates training on the check).
+Verified: the guard rejects the current local data (86 / f0a3a9.., 198 /
+96446c..); 34 tests pass; ruff clean. The notebook itself has not been run.
+Found: the local mirror has only 90 raw images and no processed images, and
+gdown is rate-limited (no progress). Even the 198-headline corpus hashes
+differently from the published run, so the corpus text has changed since then:
+the author must find which column changed before the reseed can pass the gate.
+
 Verified: PDF compiles with 0 errors, 0 overfull boxes. Checked by hand that
 every paired_headlines seed run has items_scored 86 and seeds.json paired
 differences have n 86 (grep over experiments/seeds/ and reports/submission/).

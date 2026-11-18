@@ -40,6 +40,30 @@ def populations():
     return {"paired_headlines": paired, "all_headlines": corpus}
 
 
+# Frozen populations: (items, input_sha256) of the published matched run
+# (reports/submission/matched.json). A run on anything else is refused, so a
+# bundle with missing photos cannot silently shrink the paired population.
+FROZEN = {
+    "paired_headlines": (149, "6d2b0d7addc9d55208c2e5bcf8a59a12554f1b928d92b7695785003e372b9247"),
+    "all_headlines": (198, "94765d304904656ecac37c975d20a9f661ce2e93fc92538a14e8c8b50e563d45"),
+}
+
+
+def check_frozen(frames, wanted):
+    problems = []
+    for population, (n, sha) in FROZEN.items():
+        if wanted and population not in wanted:
+            continue
+        frame = frames[population]
+        if len(frame) != n or digest(frame) != sha:
+            problems.append(f"{population}: {len(frame)} items, sha {digest(frame)[:12]} "
+                            f"(frozen: {n} items, sha {sha[:12]})")
+    if problems:
+        raise SystemExit("input does not match the frozen populations:\n  " + "\n  ".join(problems)
+                         + "\nRe-run `make data ingest` until every image is present, "
+                         "or pass --unpinned for an exploratory run that must not be reported.")
+
+
 def digest(frame):
     columns = ["item_id", "text", "label", "source_url"]
     return hashlib.sha256(frame[columns].to_csv(index=False).encode()).hexdigest()
@@ -51,10 +75,14 @@ def main():
     parser.add_argument("--only", nargs="*", help="restrict to these config names")
     parser.add_argument("--population", nargs="*", help="restrict to these populations")
     parser.add_argument("--seed", type=int, help="override the seed in every config")
+    parser.add_argument("--unpinned", action="store_true",
+                        help="skip the frozen-population check (exploratory only)")
     args = parser.parse_args()
 
     plan = {"paired_headlines": TEXT + MULTIMODAL, "all_headlines": TEXT}
     frames = populations()
+    if not args.unpinned:
+        check_frozen(frames, args.population)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     summary_path = out / "sweep_summary.json"
