@@ -89,6 +89,10 @@ class ExperimentConfig:
     early_stopping_patience: int | None = 2
     class_weights: bool = True
     augment: bool = True  # attach published augmentations to training folds
+    # Image ablation for the matched sweep: "none" uses each item's own photo,
+    # "blank" replaces every photo with one uniform grey image, "shuffled"
+    # gives every item another item's photo (a seeded derangement).
+    image_ablation: str = "none"
     params: dict[str, Any] = field(default_factory=dict)  # family-specific extras
 
     @classmethod

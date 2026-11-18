@@ -18,6 +18,9 @@ except ImportError:  # pragma: no cover - torch is optional for data-only work
     Dataset = object  # type: ignore[assignment]
 
 
+BLANK_IMAGE = "__blank__"  # sentinel path: a uniform grey image (image ablation)
+
+
 def load_image(relative_path: str | None, size: int = 224) -> Image.Image | None:
     """Open an image stored under data/raw/. Returns None when it is unusable.
 
@@ -27,6 +30,8 @@ def load_image(relative_path: str | None, size: int = 224) -> Image.Image | None
     """
     if not relative_path or (isinstance(relative_path, float) and pd.isna(relative_path)):
         return None
+    if relative_path == BLANK_IMAGE:
+        return Image.new("RGB", (size, size), (128, 128, 128))
     path = Path(relative_path)
     if not path.is_absolute():
         path = RAW / path

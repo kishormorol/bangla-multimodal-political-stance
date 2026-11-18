@@ -47,6 +47,32 @@ from bmpb.utils.seed import set_seed
 log = get_logger(__name__)
 
 
+def ablate_images(corpus: pd.DataFrame, mode: str, seed: int) -> pd.DataFrame:
+    """Replace each item's photo before folding; augmented rows inherit it.
+
+    "blank" gives every item the same grey image; "shuffled" gives every item
+    another item's photo (no item keeps its own), so the image carries no
+    item-specific signal while its distribution is unchanged.
+    """
+    from bmpb.data.dataset import BLANK_IMAGE
+
+    corpus = corpus.copy()
+    if mode == "blank":
+        corpus["image_path"] = BLANK_IMAGE
+    elif mode == "shuffled":
+        rng = np.random.default_rng(seed)
+        n = len(corpus)
+        if n < 2:
+            raise ValueError("shuffled images need at least two items")
+        order = rng.permutation(n)
+        while (order == np.arange(n)).any():
+            order = rng.permutation(n)
+        corpus["image_path"] = corpus["image_path"].to_numpy()[order]
+    else:
+        raise ValueError(f"unknown image_ablation {mode!r}; use none, blank or shuffled")
+    return corpus
+
+
 def make_folds(
     corpus: pd.DataFrame, n_splits: int = 5, group_key: str = "source_index", seed: int = 42
 ) -> list[np.ndarray]:
@@ -135,6 +161,11 @@ def cross_validate(
     if needs_image:
         corpus = corpus[corpus["has_image"].astype(bool)].reset_index(drop=True)
         population = "items with an image"
+    if cfg.image_ablation != "none":
+        if not needs_image:
+            raise ValueError("image_ablation needs a model that uses images")
+        corpus = ablate_images(corpus, cfg.image_ablation, cfg.seed)
+        population += f" (images {cfg.image_ablation})"
     log.info("%s: %d %s, %d folds", cfg.name, len(corpus), population, n_splits)
 
     folds = make_folds(

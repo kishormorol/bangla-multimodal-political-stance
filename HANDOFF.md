@@ -17,6 +17,26 @@ gdown is rate-limited (no progress). Even the 198-headline corpus hashes
 differently from the published run, so the corpus text has changed since then:
 the author must find which column changed before the reseed can pass the gate.
 
+Author decision (2026-11-18, in this session, after seeing results): add the
+image ablation, TF-IDF + image features, and an image-only baseline.
+Done: config key image_ablation (none/blank/shuffled; src/bmpb/config.py,
+crossval.ablate_images, dataset.BLANK_IMAGE); countvec_vit family gains
+params.text_features (count/tfidf/none). New configs in configs/multimodal/:
+<vl>_blank and <vl>_shuffled for all six VL models, tfidf_vit (exact
+tfidf_logreg features + frozen ViT), tfidf_vit_shuffled, vit_only. They run in
+the paired sweep. scripts/ablation_analysis.py fixes the comparisons before any
+run (real vs blank, real vs shuffled, tfidf_vit vs tfidf_logreg and vs
+tfidf_vit_shuffled, vit_only vs majority), asserts n=149, and writes
+reports/submission/ablation.{json,md} and ablation_tables.tex.
+seed_analysis.py now prints n per model and leaves ablation rows out of the
+paper tables (its LaTeX output is byte-identical on the old seeds).
+notebooks/run_seeds149_colab.ipynb runs all of it: 35 runs per seed.
+Verified: 59 tests pass (new tests/test_ablation.py: derangement, blank image,
+configs differ from their parents only in the ablation, tfidf_vit features
+equal tfidf_logreg's); ruff clean on changed files; analysis scripts smoke-run
+on the old seeds. No ablation run has happened; the ViT path is untested
+locally (HF CDN blocked here).
+
 Verified: PDF compiles with 0 errors, 0 overfull boxes. Checked by hand that
 every paired_headlines seed run has items_scored 86 and seeds.json paired
 differences have n 86 (grep over experiments/seeds/ and reports/submission/).

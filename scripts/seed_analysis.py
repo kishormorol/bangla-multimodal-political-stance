@@ -40,7 +40,8 @@ def main():
                              "name": row["name"], "status": "failed"})
                 continue
             runs.append({"root": str(root), "population": row["population"], "name": row["name"],
-                         "seed": row["seed"], "status": "ok", "macro_f1": row["macro_f1"]})
+                         "seed": row["seed"], "status": "ok", "macro_f1": row["macro_f1"],
+                         "n": row.get("items_scored")})
         for model in MULTIMODAL:
             for reference in TEXT_REFERENCES:
                 if {("paired_headlines", model), ("paired_headlines", reference)} - ok:
@@ -56,8 +57,11 @@ def main():
     frame = pd.DataFrame([r for r in runs if r["status"] == "ok"])
     failed = [r for r in runs if r["status"] != "ok"]
     models = (
-        frame.groupby(["population", "name"])["macro_f1"]
-        .agg(seeds="count", mean="mean", sd=lambda s: s.std(ddof=1), min="min", max="max")
+        frame.groupby(["population", "name"])
+        .agg(seeds=("macro_f1", "count"),
+             n=("n", lambda s: "/".join(sorted({str(v) for v in s}))),
+             mean=("macro_f1", "mean"), sd=("macro_f1", lambda s: s.std(ddof=1)),
+             min=("macro_f1", "min"), max=("macro_f1", "max"))
         .reset_index()
     )
     deltas = pd.DataFrame(diffs)
@@ -72,11 +76,11 @@ def main():
         .reset_index()
     )
 
-    lines = ["| Population | Model | Seeds | Mean macro-F1 | SD | Min | Max |",
-             "| --- | --- | ---: | ---: | ---: | ---: | ---: |"]
+    lines = ["| Population | Model | Seeds | n | Mean macro-F1 | SD | Min | Max |",
+             "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
     for r in models.itertuples():
-        lines.append(f"| {r.population} | {r.name} | {r.seeds} | {r.mean:.3f} | {r.sd:.3f} | "
-                     f"{r.min:.3f} | {r.max:.3f} |")
+        lines.append(f"| {r.population} | {r.name} | {r.seeds} | {r.n} | {r.mean:.3f} | "
+                     f"{r.sd:.3f} | {r.min:.3f} | {r.max:.3f} |")
     lines += ["", "| VL model | Reference | Seeds | Mean Δ | SD | Min | Max | CI>0 | CI<0 |",
               "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
     for r in pairs.itertuples():
@@ -89,6 +93,8 @@ def main():
     for population in ("paired_headlines", "all_headlines"):
         tex.append(f"\\newcommand{{\\SeedRows{population.split('_')[0].capitalize()}}}{{%")
         for r in models[models.population == population].itertuples():
+            if r.name not in LABELS:  # ablation runs: see scripts/ablation_analysis.py
+                continue
             modality = "text+image" if r.name in MULTIMODAL else "text"
             tex.append(f"{LABELS[r.name]} & {modality} & {r.seeds} & {r.mean:.3f} & {r.sd:.3f} & "
                        f"{r.min:.3f}--{r.max:.3f} \\\\")

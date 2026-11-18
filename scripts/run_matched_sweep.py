@@ -30,6 +30,11 @@ from bmpb.paths import CONFIGS, CORPUS
 
 TEXT = ["majority", "tfidf_logreg", "banglabert", "bangla_electra", "mbert", "xlmr", "mt5"]
 MULTIMODAL = ["countvec_vit", "clip", "align", "blip", "vilt", "flava"]
+# Added after the matched results, by the author's decision (HANDOFF.md,
+# 2026-11-18): each VL model with blank and with shuffled photos, the
+# TF-IDF + ViT pair for tfidf_logreg, and an image-only floor.
+ABLATION = [f"{m}_{mode}" for m in MULTIMODAL for mode in ("blank", "shuffled")] + [
+    "tfidf_vit", "tfidf_vit_shuffled", "vit_only"]
 
 
 def populations():
@@ -79,7 +84,7 @@ def main():
                         help="skip the frozen-population check (exploratory only)")
     args = parser.parse_args()
 
-    plan = {"paired_headlines": TEXT + MULTIMODAL, "all_headlines": TEXT}
+    plan = {"paired_headlines": TEXT + MULTIMODAL + ABLATION, "all_headlines": TEXT}
     frames = populations()
     if not args.unpinned:
         check_frozen(frames, args.population)
@@ -99,7 +104,7 @@ def main():
             if (population, name) in done:
                 print(f"skip {population}/{name}: already done", flush=True)
                 continue
-            kind = "multimodal" if name in MULTIMODAL else "text"
+            kind = "multimodal" if name in MULTIMODAL + ABLATION else "text"
             config = CONFIGS / kind / f"{name}.yaml"
             if args.seed is not None:
                 settings = yaml.safe_load(config.read_text())

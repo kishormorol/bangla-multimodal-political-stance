@@ -82,7 +82,13 @@ def countvec_vit(cfg: ExperimentConfig):
     for param in vision.parameters():
         param.requires_grad = False
 
-    text_vectorizer = _char_word_vectorizer("count", cfg.params)
+    # text_features: "count" (the original baseline), "tfidf" (the same
+    # char n-gram TF-IDF as tfidf_logreg, so the pair differs only by the
+    # image), or "none" (image-only).
+    text_kind = cfg.params.get("text_features", "count")
+    if text_kind not in {"count", "tfidf", "none"}:
+        raise ValueError(f"text_features must be count, tfidf or none, not {text_kind!r}")
+    text_vectorizer = None if text_kind == "none" else _char_word_vectorizer(text_kind, cfg.params)
 
     class CountVecViT:
         """sklearn-shaped: fit/predict over (texts, images)."""
@@ -90,6 +96,7 @@ def countvec_vit(cfg: ExperimentConfig):
         def __init__(self) -> None:
             self.vectorizer = text_vectorizer
             self.classifier = LogisticRegression(
+                C=cfg.params.get("C", 1.0),
                 max_iter=cfg.params.get("max_iter", 2000),
                 class_weight="balanced" if cfg.class_weights else None,
             )
@@ -107,15 +114,18 @@ def countvec_vit(cfg: ExperimentConfig):
                     features.append(pooled.cpu().numpy())
             return np.vstack(features) if features else np.empty((0, vision.config.hidden_size))
 
+        def features(self, texts, images, fit=False):
+            image = self.image_features(images)
+            if self.vectorizer is None:
+                return image
+            vectorize = self.vectorizer.fit_transform if fit else self.vectorizer.transform
+            return np.hstack([vectorize(texts).toarray(), image])
+
         def fit(self, texts, images, labels):
-            text_features = self.vectorizer.fit_transform(texts).toarray()
-            combined = np.hstack([text_features, self.image_features(images)])
-            self.classifier.fit(combined, labels)
+            self.classifier.fit(self.features(texts, images, fit=True), labels)
             return self
 
         def predict(self, texts, images):
-            text_features = self.vectorizer.transform(texts).toarray()
-            combined = np.hstack([text_features, self.image_features(images)])
-            return self.classifier.predict(combined)
+            return self.classifier.predict(self.features(texts, images))
 
     return CountVecViT(), processor

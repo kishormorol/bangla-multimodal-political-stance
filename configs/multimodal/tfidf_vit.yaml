@@ -1,0 +1,20 @@
+# The controlled test of "does the photo add anything to the best text model":
+# tfidf_logreg's exact char n-gram TF-IDF features plus frozen ViT [CLS]
+# features, same logistic regression. Pair it with tfidf_logreg.
+# Added after the matched results were seen, by the author's decision (HANDOFF.md, 2026-11-18).
+name: tfidf_vit
+modality: multimodal
+family: countvec_vit
+num_labels: 3
+image_size: 224
+eval_batch_size: 16
+class_weights: true
+seed: 42
+params:
+  vision_model: google/vit-base-patch16-224-in21k
+  text_features: tfidf
+  analyzer: char_wb
+  ngram_range: [2, 5]
+  min_df: 2
+  max_features: 50000
+  C: 1.0

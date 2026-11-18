@@ -1,0 +1,14 @@
+# Image-only baseline: frozen ViT [CLS] features + logistic regression, no text.
+# Do the photographs carry any label signal on their own?
+# Added after the matched results were seen, by the author's decision (HANDOFF.md, 2026-11-18).
+name: vit_only
+modality: image
+family: countvec_vit
+num_labels: 3
+image_size: 224
+eval_batch_size: 16
+class_weights: true
+seed: 42
+params:
+  vision_model: google/vit-base-patch16-224-in21k
+  text_features: none
