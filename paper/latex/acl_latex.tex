@@ -17,7 +17,7 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-Evaluating political stance in Bangla news requires distinguishing item-level framing from outlet-level bias and controlling the evidence available to models. We examine a collection of 198 news items with government-critique, neutral, and government-leaning labels. A provenance audit identifies 145 items with consistent headline or source-link matches to BanglaBias after one verified URL correction, and 53 unmatched items. Separate text and image stance fields agree on 72 of 152 jointly labelled items. Auditing the earlier experiments, we find augmentation leakage in the original text split, test-fold checkpoint selection in a later cross-validation implementation, and unequal evaluation populations. We then rerun thirteen text and vision--language models under a corrected protocol: one source-grouped five-fold split of 149 readable-image items, headline input for every model, and checkpoint selection on an inner validation split. Across five seeds (42--46), a character n-gram TF-IDF classifier averages macro-F1 0.562 (SD 0.046, range 0.512--0.611). Every vision--language model scores below it at every seed: mean paired differences range from $-0.192$ to $-0.277$, and source-group bootstrap intervals exclude zero in 3--5 of 5 seeds. Against fine-tuned BanglaBERT (mean 0.402, SD 0.062), no vision--language model's interval excludes zero in any seed. On this sample, we find no evidence that adding the photograph improves headline stance classification.
+Evaluating political stance in Bangla news requires distinguishing item-level framing from outlet-level bias and controlling the evidence available to models. We examine a collection of 198 news items with government-critique, neutral, and government-leaning labels. A provenance audit identifies 145 items with consistent headline or source-link matches to BanglaBias after one verified URL correction, and 53 unmatched items. Separate text and image stance fields agree on 72 of 152 jointly labelled items. Auditing the earlier experiments, we find augmentation leakage in the original text split, test-fold checkpoint selection in a later cross-validation implementation, and unequal evaluation populations. We then rerun thirteen text and vision--language models under a corrected protocol: a source-grouped five-fold split per seed of 149 readable-image items, headline input for every model, and checkpoint selection on an inner validation split. Across five seeds (42--46), a character n-gram TF-IDF classifier averages macro-F1 0.562 (SD 0.046, range 0.512--0.611). Every vision--language model scores below it at every seed: mean paired differences range from $-0.192$ to $-0.277$, and source-group bootstrap intervals exclude zero in 3--5 of 5 seeds. Against fine-tuned BanglaBERT (mean 0.402, SD 0.062), no vision--language model is better: intervals for CLIP, CountVec+ViT and BLIP include zero at every seed, while ALIGN, ViLT and FLAVA fall below it in 2, 1 and 3 of 5 seeds. On this sample, we find no evidence that adding the photograph improves headline stance classification.
 \end{abstract}
 
 \section{Introduction}
@@ -121,7 +121,7 @@ Tables~\ref{tab:matched}--\ref{tab:paired} report the seed-42 run in detail; Tab
 \begin{table*}[t]
 \footnotesize
 \centering
-\caption{Matched comparison on the 149 readable-image items ($n=149$, one source-grouped five-fold split shared by every model, headline input, inner-validation checkpoint selection for neural models, seed~42). F1 is pooled out-of-fold macro-F1 with a 95\% item-bootstrap interval; ``Fold'' is mean $\pm$ sample standard deviation of fold macro-F1. The last three columns are per-class F1 for government-critique, neutral, and government-leaning. The majority baseline predicts one class for every item.}
+\caption{Matched comparison on the 149 readable-image items ($n=149$, one source-grouped five-fold split shared by every model within the seed, headline input, inner-validation checkpoint selection for neural models, seed~42). F1 is pooled out-of-fold macro-F1 with a 95\% item-bootstrap interval; ``Fold'' is mean $\pm$ sample standard deviation of fold macro-F1. The last three columns are per-class F1 for government-critique, neutral, and government-leaning. The majority baseline predicts one class for every item.}
 \begin{tabular}{llccccccc}
 \toprule
 \textbf{Model} & \textbf{Input} & \textbf{Acc.} & \textbf{Macro-F1} & \textbf{95\% CI} & \textbf{Fold} & \textbf{F1\textsubscript{gc}} & \textbf{F1\textsubscript{neu}} & \textbf{F1\textsubscript{gl}} \\
@@ -183,17 +183,18 @@ TF-IDF is the top model at every seed (mean 0.562, SD 0.046). BanglaBERT average
 \setlength{\tabcolsep}{3pt}
 \centering
 \caption{Macro-F1 across five seeds (42--46) on 149 readable-image items. SD is sample standard deviation; Range is min--max.}\label{tab:seed_stability}
-\begin{tabular}{llccc}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llcccc}
 \toprule
-\textbf{Model} & \textbf{Input} & \textbf{Mean} & \textbf{SD} & \textbf{Range} \\
+\textbf{Model} & \textbf{Input} & \textbf{Seeds} & \textbf{Mean} & \textbf{SD} & \textbf{Range} \\
 \midrule
 \SeedRowsPaired
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 Table~\ref{tab:seed_diff} extends the paired comparisons across seeds. % source: reports/submission/seeds.json, paired_differences
-Against TF-IDF, every vision--language model has a negative mean difference ($-0.192$ to $-0.277$), and the bootstrap interval excludes zero in 3--5 of 5 seeds. Against BanglaBERT, mean differences range from $-0.032$ to $-0.117$; the interval excludes zero in at most 3 of 5 seeds (FLAVA), and for CLIP and CountVec+ViT it never excludes zero. The null multimodal result is stable across seeds and fold assignments.
+Against TF-IDF, every vision--language model has a negative mean difference ($-0.192$ to $-0.277$), and the bootstrap interval excludes zero in 3--5 of 5 seeds. Against BanglaBERT, mean differences range from $-0.032$ to $-0.117$; the interval excludes zero in at most 3 of 5 seeds (FLAVA), and for CLIP, CountVec+ViT and BLIP it never excludes zero. The null multimodal result is stable across seeds and fold assignments.
 
 \begin{table}[t]
 \footnotesize
@@ -218,7 +219,7 @@ The fine-tuned encoders are therefore likely under-trained relative to what a la
 \section{Discussion}
 The audit changes what the evidence can support. First, direct overlap with BanglaBias requires attribution and a clear distinction between inherited article data and any additional image collection or annotations. The 53 unmatched rows and annotation procedures still require documentation before a resource-novelty claim.
 
-Second, the matched rerun does not support a multimodal advantage, and this holds across five seeds (Section~\ref{sec:seeds}). TF-IDF is the top model at every seed; the vision--language deficit against it is large enough that bootstrap intervals exclude zero in most seeds. Against BanglaBERT, vision--language models are indistinguishable at every seed. Two reasons are compatible with this result and are not separated here: the vision--language text encoders were not pretrained for Bangla, and 149 items may be too few to learn a useful image--text interaction with frozen backbones. The modality-label disagreement (72 of 152 items) shows that annotators sometimes read the photograph differently from the text, but these models do not convert that difference into better prediction of the final item label. BanglaBERT's high seed variance (SD 0.062) suggests that small inner-validation sets produce noisy checkpoint selection; TF-IDF's stability (SD 0.046) is consistent with its non-neural architecture.
+Second, the matched rerun does not support a multimodal advantage, and this holds across five seeds (Section~\ref{sec:seeds}). TF-IDF is the top model at every seed; the vision--language deficit against it is large enough that bootstrap intervals exclude zero in most seeds. Against BanglaBERT, no vision--language model is better at any seed; CLIP, CountVec+ViT and BLIP are indistinguishable at every seed, and ALIGN, ViLT and FLAVA are worse in some seeds. Two reasons are compatible with this result and are not separated here: the vision--language text encoders were not pretrained for Bangla, and 149 items may be too few to learn a useful image--text interaction with frozen backbones. The modality-label disagreement (72 of 152 items) shows that annotators sometimes read the photograph differently from the text, but these models do not convert that difference into better prediction of the final item label. BanglaBERT's seed variance (SD 0.062) is compatible with noisy checkpoint selection on small inner-validation sets.
 
 Third, a common cross-validation label is insufficient to establish comparability. Every historical text score is higher than its corrected all-headline counterpart (Tables~\ref{tab:text_models} and~\ref{tab:all_headlines}). Removing test-informed checkpoint selection and equalizing populations changed both the absolute scores and the ranking, with a linear baseline moving from second place to first.
 
