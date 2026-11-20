@@ -1,3 +1,31 @@
+## 2026-11-20 · Claude (Opus 5.5, Claude Code) · agent/experiments-blip-fusion
+
+Found: the BLIP baseline never used the image. AutoModel maps
+Salesforce/blip-itm-base-coco to BlipModel (dual encoder), and the
+fusion_encoder classifier read `text_model_output` [CLS], which is computed
+without the image. Evidence: in seeds149 seeds 42-44, blip, blip_blank and
+blip_shuffled predictions.csv are identical on all 149 items. Every BLIP
+number so far (matched.json, paper tables, seeds) is a frozen-English-BERT
+text classifier, not a VL model. ViLT (pooler_output) and FLAVA
+(multimodal_embeddings) are not affected.
+Done (author asked for option 1, fix and rerun): src/bmpb/models/multimodal.py
+loads BlipForImageTextRetrieval for BLIP and classifies on the ITM encoder's
+[CLS] (text cross-attending to image). tests/test_fusion_image.py: tiny
+synthetic BLIP; fails on the old code, passes on the fix.
+Verified: 60 tests pass (transformers 5.23, .venv-gpu); ruff clean; real
+checkpoint's ITM [CLS] changes with the image (max diff 0.034, grey vs red).
+Not run yet: the BLIP reruns. After the seeds149 sweep ends, rerun blip,
+blip_blank, blip_shuffled for seeds 42-46 (delete their rows from each
+sweep_summary.json so the runner redoes them), then re-run seed_analysis.py and
+ablation_analysis.py. matched.json's BLIP row needs the same rerun.
+Interim 3-seed analyses (seeds 42-44, old BLIP) are in
+reports/interim/seeds149-3seeds/ on the main checkout, not for the paper.
+Also flagged, not investigated: tfidf_vit is 0.131 below tfidf_logreg (3/3
+seeds) despite identical TF-IDF features; possibly feature scaling of the
+concatenation.
+Needs the author: whether the paper reports the BLIP bug; what to do about
+tfidf_vit.
+
 ## 2026-11-18 · Claude (Opus 5.5 + Fable 5.2 reviewer, Claude Code) · agent/review-presubmission
 
 Done: pre-submission review. Fixed the seed-stability table (header had 5 cols

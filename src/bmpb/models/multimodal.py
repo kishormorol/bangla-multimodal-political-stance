@@ -81,10 +81,20 @@ def fusion_encoder(cfg: ExperimentConfig):
     `max_length` accordingly rather than the code guessing.
     """
     import torch
-    from transformers import AutoModel, AutoProcessor
+    from transformers import AutoConfig, AutoModel, AutoProcessor
 
     processor = AutoProcessor.from_pretrained(cfg.pretrained)
-    backbone = AutoModel.from_pretrained(cfg.pretrained)
+    # AutoModel maps a BLIP checkpoint to BlipModel, a dual encoder whose text
+    # tower never attends to the image; its text [CLS] is image-blind. The
+    # fused state is the image-text matching encoder's [CLS], which
+    # cross-attends to the image embeddings.
+    is_blip = AutoConfig.from_pretrained(cfg.pretrained).model_type == "blip"
+    if is_blip:
+        from transformers import BlipForImageTextRetrieval
+
+        backbone = BlipForImageTextRetrieval.from_pretrained(cfg.pretrained)
+    else:
+        backbone = AutoModel.from_pretrained(cfg.pretrained)
 
     class FusedClassifier(torch.nn.Module):
         def __init__(self) -> None:
@@ -98,14 +108,13 @@ def fusion_encoder(cfg: ExperimentConfig):
             self.classifier = torch.nn.Linear(hidden, cfg.num_labels)
 
         def forward(self, labels=None, **inputs):
-            outputs = self.backbone(**inputs)
-            pooled = getattr(outputs, "pooler_output", None)
-            if pooled is None:
-                # BLIP returns BlipOutput — extract [CLS] from the text sub-model.
-                text_out = getattr(outputs, "text_model_output", None)
-                if text_out is not None:
-                    pooled = text_out.last_hidden_state[:, 0]
-                else:
+            if is_blip:
+                outputs = self.backbone(**inputs, use_itm_head=True)
+                pooled = outputs.question_embeds[:, 0]
+            else:
+                outputs = self.backbone(**inputs)
+                pooled = getattr(outputs, "pooler_output", None)
+                if pooled is None:
                     state = getattr(outputs, "multimodal_embeddings", None)
                     if state is None:
                         state = outputs.last_hidden_state
