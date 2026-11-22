@@ -1,0 +1,21 @@
+# tfidf_vit with each ViT vector L2-normalised, like the TF-IDF rows. Tests
+# whether tfidf_vit's deficit vs tfidf_logreg is a feature-scale artefact.
+# Follow-up ablation, added after the five-seed results were seen, by the
+# author's decision (HANDOFF.md, 2026-11-22).
+name: tfidf_vit_l2
+modality: multimodal
+family: countvec_vit
+num_labels: 3
+image_size: 224
+eval_batch_size: 16
+class_weights: true
+seed: 42
+params:
+  vision_model: google/vit-base-patch16-224-in21k
+  text_features: tfidf
+  image_norm: l2
+  analyzer: char_wb
+  ngram_range: [2, 5]
+  min_df: 2
+  max_features: 50000
+  C: 1.0

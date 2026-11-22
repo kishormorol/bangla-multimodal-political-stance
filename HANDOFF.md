@@ -1,3 +1,22 @@
+## 2026-11-22 (later) · Claude (Opus 5.5, Claude Code) · agent/experiments-blip-fusion
+
+Author decisions (2026-11-22, in session, after seeing the five-seed results):
+1. Update reports/submission and the paper to the five-seed 149-item results
+   and the fixed BLIP, with two reworded claims: "CLIP exceeds BanglaBERT on
+   average, reliably in 2/5 seeds" (replacing "no VL model is better than
+   BanglaBERT") and "only CLIP uses the photo, and even with it stays below
+   TF-IDF" (replacing "no tested model shows a reliable gain from the
+   photograph"); add a short ablation subsection.
+2. Run two follow-up ablations, comparisons fixed before the runs in
+   scripts/ablation_analysis.py FOLLOWUP (--set followup):
+   * tfidf_vit_l2 (params.image_norm: l2) vs tfidf_logreg, vs
+     tfidf_vit_l2_shuffled, vs tfidf_vit;
+   * clip_en (params.translate_text: headlines replaced by NLLB-200
+     distilled-600M English machine translation, scripts/translate_headlines.py,
+     cache data/interim/translations_en.csv) vs clip, vs clip_en_blank.
+   Seeds 42-46, paired 149 items. Only one scaling variant (L2) is run, to
+   avoid searching over fixes.
+
 ## 2026-11-22 · Claude (Opus 5.5, Claude Code) · agent/experiments-blip-fusion
 
 Done: seeds149 sweep finished on the GPU desktop, seeds 42–46, 35/35 runs ok

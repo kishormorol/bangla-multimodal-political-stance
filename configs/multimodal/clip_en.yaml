@@ -1,0 +1,21 @@
+﻿# CLIP on English machine translations of the headlines (scripts/translate_headlines.py).
+# Tests whether CLIP is held back by its English-only tokenizer.
+# Follow-up ablation, added after the five-seed results were seen, by the author's decision (HANDOFF.md, 2026-11-22).
+name: clip_en
+modality: multimodal
+family: clip_like
+pretrained: openai/clip-vit-base-patch32
+num_labels: 3
+epochs: 10
+batch_size: 16
+learning_rate: 1.0e-4   # head-only LR; the backbone is frozen
+max_length: 77          # CLIP's hard context limit
+image_size: 224
+freeze_encoder: true
+class_weights: true
+early_stopping_patience: 3
+seed: 42
+params:
+  fusion: gated
+  translate_text: true
+

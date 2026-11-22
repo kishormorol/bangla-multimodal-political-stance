@@ -89,6 +89,12 @@ def countvec_vit(cfg: ExperimentConfig):
     if text_kind not in {"count", "tfidf", "none"}:
         raise ValueError(f"text_features must be count, tfidf or none, not {text_kind!r}")
     text_vectorizer = None if text_kind == "none" else _char_word_vectorizer(text_kind, cfg.params)
+    # image_norm: "none" (raw ViT [CLS], the original baseline) or "l2" (each
+    # image vector scaled to unit length, matching the L2-normalised TF-IDF
+    # rows, so neither block dominates the logistic regression by scale alone).
+    image_norm = cfg.params.get("image_norm", "none")
+    if image_norm not in {"none", "l2"}:
+        raise ValueError(f"image_norm must be none or l2, not {image_norm!r}")
 
     class CountVecViT:
         """sklearn-shaped: fit/predict over (texts, images)."""
@@ -112,7 +118,13 @@ def countvec_vit(cfg: ExperimentConfig):
                     inputs = self.processor(images=chunk, return_tensors="pt")
                     pooled = self.vision(**inputs).last_hidden_state[:, 0]
                     features.append(pooled.cpu().numpy())
-            return np.vstack(features) if features else np.empty((0, vision.config.hidden_size))
+            if not features:
+                return np.empty((0, vision.config.hidden_size))
+            stacked = np.vstack(features)
+            if image_norm == "l2":
+                norms = np.linalg.norm(stacked, axis=1, keepdims=True)
+                stacked = stacked / np.maximum(norms, 1e-12)
+            return stacked
 
         def features(self, texts, images, fit=False):
             image = self.image_features(images)

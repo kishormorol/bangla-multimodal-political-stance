@@ -111,6 +111,37 @@ def make_folds(
     return [np.where(fold_of == f)[0] for f in range(n_splits)]
 
 
+def translate_frames(
+    corpus: pd.DataFrame, augmentations: pd.DataFrame, path: Path | None = None
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Swap every `text` value for its cached English translation.
+
+    The cache (data/interim/translations_en.csv, columns `bn`, `en`) is built by
+    scripts/translate_headlines.py. Original and augmented rows are both
+    translated, so no Bangla text reaches a translated run. A missing string is
+    an error, never a silent fall-back to Bangla.
+    """
+    from bmpb.paths import INTERIM
+
+    path = path or INTERIM / "translations_en.csv"
+    if not Path(path).exists():
+        raise FileNotFoundError(f"{path} not found; run scripts/translate_headlines.py")
+    table = pd.read_csv(path, keep_default_na=False)
+    mapping = dict(zip(table["bn"], table["en"], strict=True))
+    frames = []
+    for frame in (corpus, augmentations):
+        if frame.empty:
+            frames.append(frame)
+            continue
+        missing = sorted(set(frame["text"]) - set(mapping))
+        if missing:
+            raise KeyError(f"{len(missing)} texts have no cached translation, e.g. {missing[0]!r}")
+        frame = frame.copy()
+        frame["text"] = frame["text"].map(mapping)
+        frames.append(frame)
+    return frames[0], frames[1]
+
+
 def _fit_predict(
     cfg: ExperimentConfig,
     train: pd.DataFrame,
@@ -180,6 +211,9 @@ def cross_validate(
         "augment_train", data_cfg.split.get("augment_train", True)
     )
     augmentations = load_published_augmentations(corpus) if augment_train else pd.DataFrame()
+    if cfg.params.get("translate_text"):
+        corpus, augmentations = translate_frames(corpus, augmentations)
+        log.info("%s: text replaced by cached English machine translation", cfg.name)
 
     started = time.time()
     per_fold: list[dict] = []
