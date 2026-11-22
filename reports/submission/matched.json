@@ -2561,7 +2561,7 @@
       "population": "paired_headlines",
       "items_scored": 149,
       "seed": 42,
-      "git_commit": null,
+      "git_commit": "e5cc1a686bfaed67b31493305faa58ca69d6f844",
       "augment_train": true,
       "checkpoint_selection": "grouped inner validation from outer training data",
       "fold_item_ids": [
@@ -2725,37 +2725,37 @@
           "Image_190"
         ]
       ],
-      "accuracy": 0.3825503355704698,
-      "macro_f1": 0.36125756320453917,
+      "accuracy": 0.3422818791946309,
+      "macro_f1": 0.27472383448792365,
       "macro_f1_ci95": [
-        0.28046521731945645,
-        0.4355411448667925
+        0.21435611855592526,
+        0.33186115654554377
       ],
-      "fold_macro_f1_mean": 0.3195416956973021,
-      "fold_macro_f1_sd": 0.08425636261904988,
-      "fold_macro_f1_min": 0.24393939393939398,
-      "fold_macro_f1_max": 0.4338624338624338,
+      "fold_macro_f1_mean": 0.19565625735863681,
+      "fold_macro_f1_sd": 0.07391735010569639,
+      "fold_macro_f1_min": 0.11764705882352942,
+      "fold_macro_f1_max": 0.2888888888888889,
       "per_class_f1": {
-        "govt_critique": 0.4647887323943662,
-        "neutral": 0.29545454545454547,
-        "govt_leaning": 0.3235294117647059
+        "govt_critique": 0.4714285714285714,
+        "neutral": 0.04081632653061224,
+        "govt_leaning": 0.3119266055045872
       },
       "majority_baseline_accuracy": 0.48322147651006714,
       "confusion": [
         [
           33,
-          22,
+          4,
+          35
+        ],
+        [
+          19,
+          1,
+          23
+        ],
+        [
+          16,
+          1,
           17
-        ],
-        [
-          24,
-          13,
-          6
-        ],
-        [
-          13,
-          10,
-          11
         ]
       ],
       "notes": [],
@@ -2765,47 +2765,47 @@
           "n_train": 150,
           "n_val": 25,
           "n_test": 31,
-          "accuracy": 0.3870967741935484,
-          "macro_f1": 0.3835240274599543
+          "accuracy": 0.5161290322580645,
+          "macro_f1": 0.2888888888888889
         },
         {
           "fold": 2,
           "n_train": 145,
           "n_val": 25,
           "n_test": 31,
-          "accuracy": 0.2903225806451613,
-          "macro_f1": 0.27923976608187134
+          "accuracy": 0.22580645161290322,
+          "macro_f1": 0.12280701754385964
         },
         {
           "fold": 3,
           "n_train": 154,
           "n_val": 25,
           "n_test": 30,
-          "accuracy": 0.4,
-          "macro_f1": 0.24393939393939398
+          "accuracy": 0.4666666666666667,
+          "macro_f1": 0.2170542635658915
         },
         {
           "fold": 4,
           "n_train": 155,
           "n_val": 25,
           "n_test": 29,
-          "accuracy": 0.4482758620689655,
-          "macro_f1": 0.4338624338624338
+          "accuracy": 0.27586206896551724,
+          "macro_f1": 0.2318840579710145
         },
         {
           "fold": 5,
           "n_train": 156,
           "n_val": 25,
           "n_test": 28,
-          "accuracy": 0.39285714285714285,
-          "macro_f1": 0.2571428571428571
+          "accuracy": 0.21428571428571427,
+          "macro_f1": 0.11764705882352942
         }
       ],
-      "seconds": 415.1,
+      "seconds": 353.1,
       "status": "ok",
       "input_items": 149,
       "input_sha256": "6d2b0d7addc9d55208c2e5bcf8a59a12554f1b928d92b7695785003e372b9247",
-      "wall_seconds": 415.2
+      "wall_seconds": 353.3
     },
     {
       "name": "vilt",
@@ -5526,24 +5526,24 @@
       "reference": "tfidf_logreg",
       "n": 149,
       "groups": 148,
-      "delta_macro_f1": -0.18127589462303628,
+      "delta_macro_f1": -0.2678096233396518,
       "ci95": [
-        -0.28801945991344163,
-        -0.06995918660762285
+        -0.36601628657055907,
+        -0.16594963659962855
       ],
-      "share_resamples_above_zero": 0.0015
+      "share_resamples_above_zero": 0.0
     },
     {
       "model": "blip",
       "reference": "banglabert",
       "n": 149,
       "groups": 148,
-      "delta_macro_f1": -0.005901449973850781,
+      "delta_macro_f1": -0.0924351786904663,
       "ci95": [
-        -0.12489978400284107,
-        0.12151976698665946
+        -0.19954088373673387,
+        0.01358109207654744
       ],
-      "share_resamples_above_zero": 0.471
+      "share_resamples_above_zero": 0.042
     },
     {
       "model": "vilt",

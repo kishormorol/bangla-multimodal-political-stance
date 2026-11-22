@@ -1,14 +1,20 @@
 {
   "neural_fold_runs": 75,
-  "early_stopped": 65,
+  "early_stopped": 64,
   "selected_epoch_when_early_stopped": {
-    "1": 17,
-    "2": 12,
-    "3": 9,
+    "1": 20,
+    "2": 11,
+    "3": 8,
     "4": 10,
-    "5": 12,
-    "6": 3,
+    "5": 11,
+    "6": 2,
     "7": 2
   },
-  "early_stopped_selecting_epoch_1_or_2": 29
+  "early_stopped_selecting_epoch_1_or_2": 31,
+  "blip_section": {
+    "published_fold_runs": 5,
+    "published_early_stops": 5,
+    "fixed_fold_runs": 5,
+    "fixed_early_stops": 4
+  }
 }

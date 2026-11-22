@@ -10,7 +10,7 @@
 | paired_headlines | countvec_vit | ok | 149 | 0.470 | 0.425 | 0.345–0.508 | 0.410 ± 0.135 | 0.584 | 0.278 | 0.414 |  |
 | paired_headlines | clip | ok | 149 | 0.436 | 0.387 | 0.308–0.463 | 0.356 ± 0.101 | 0.558 | 0.239 | 0.364 |  |
 | paired_headlines | align | ok | 149 | 0.362 | 0.341 | 0.267–0.414 | 0.314 ± 0.053 | 0.459 | 0.321 | 0.244 |  |
-| paired_headlines | blip | ok | 149 | 0.383 | 0.361 | 0.280–0.436 | 0.320 ± 0.084 | 0.465 | 0.295 | 0.324 |  |
+| paired_headlines | blip | ok | 149 | 0.342 | 0.275 | 0.214–0.332 | 0.196 ± 0.074 | 0.471 | 0.041 | 0.312 |  |
 | paired_headlines | vilt | ok | 149 | 0.436 | 0.340 | 0.260–0.415 | 0.275 ± 0.104 | 0.584 | 0.226 | 0.209 |  |
 | paired_headlines | flava | ok | 149 | 0.349 | 0.325 | 0.252–0.399 | 0.283 ± 0.105 | 0.460 | 0.194 | 0.320 |  |
 | all_headlines | majority | ok | 198 | 0.520 | 0.228 | 0.207–0.248 | 0.228 ± 0.002 | 0.684 | 0.000 | 0.000 | model predicted a single class for every item (degenerate) |
@@ -31,8 +31,8 @@ Paired macro-F1 difference (vision-language minus text), readable-image items, s
 | clip | banglabert | 149 | 148 | +0.020 | -0.095 to +0.133 | 0.637 |
 | align | tfidf_logreg | 149 | 148 | -0.201 | -0.317 to -0.083 | 0.001 |
 | align | banglabert | 149 | 148 | -0.026 | -0.131 to +0.081 | 0.328 |
-| blip | tfidf_logreg | 149 | 148 | -0.181 | -0.288 to -0.070 | 0.002 |
-| blip | banglabert | 149 | 148 | -0.006 | -0.125 to +0.122 | 0.471 |
+| blip | tfidf_logreg | 149 | 148 | -0.268 | -0.366 to -0.166 | 0.000 |
+| blip | banglabert | 149 | 148 | -0.092 | -0.200 to +0.014 | 0.042 |
 | vilt | tfidf_logreg | 149 | 148 | -0.203 | -0.315 to -0.088 | 0.001 |
 | vilt | banglabert | 149 | 148 | -0.027 | -0.133 to +0.084 | 0.316 |
 | flava | tfidf_logreg | 149 | 148 | -0.218 | -0.327 to -0.105 | 0.000 |
