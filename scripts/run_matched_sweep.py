@@ -35,6 +35,8 @@ MULTIMODAL = ["countvec_vit", "clip", "align", "blip", "vilt", "flava"]
 # TF-IDF + ViT pair for tfidf_logreg, and an image-only floor.
 ABLATION = [f"{m}_{mode}" for m in MULTIMODAL for mode in ("blank", "shuffled")] + [
     "tfidf_vit", "tfidf_vit_shuffled", "vit_only"]
+# Follow-up ablations (author's decision, HANDOFF.md, 2026-11-22).
+FOLLOWUP = ["tfidf_vit_l2", "tfidf_vit_l2_shuffled", "clip_en", "clip_en_blank"]
 
 
 def populations():
@@ -87,7 +89,7 @@ def main():
                         help="skip the frozen-population check (exploratory only)")
     args = parser.parse_args()
 
-    plan = {"paired_headlines": TEXT + MULTIMODAL + ABLATION, "all_headlines": TEXT}
+    plan = {"paired_headlines": TEXT + MULTIMODAL + ABLATION + FOLLOWUP, "all_headlines": TEXT}
     frames = populations()
     if not args.unpinned:
         check_frozen(frames, args.population)
@@ -97,6 +99,9 @@ def main():
     rows = json.loads(summary_path.read_text()) if summary_path.exists() else []
     done = {(r["population"], r["name"]) for r in rows if r.get("status") == "ok"}
 
+    unknown = set(args.only or ()) - {n for names in plan.values() for n in names}
+    if unknown:
+        raise SystemExit(f"--only names not in the sweep: {sorted(unknown)}")
     for population, names in plan.items():
         if args.population and population not in args.population:
             continue
@@ -107,7 +112,7 @@ def main():
             if (population, name) in done:
                 print(f"skip {population}/{name}: already done", flush=True)
                 continue
-            kind = "multimodal" if name in MULTIMODAL + ABLATION else "text"
+            kind = "multimodal" if name in MULTIMODAL + ABLATION + FOLLOWUP else "text"
             config = CONFIGS / kind / f"{name}.yaml"
             if args.seed is not None:
                 settings = yaml.safe_load(config.read_text())
