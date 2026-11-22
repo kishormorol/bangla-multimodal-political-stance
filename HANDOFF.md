@@ -1,3 +1,24 @@
+## 2026-11-22 · Claude (Opus 5.5, Claude Code) · agent/experiments-blip-fusion
+
+Done: seeds149 sweep finished on the GPU desktop, seeds 42–46, 35/35 runs ok
+per seed (paired n=149, all headlines n=198). BLIP, blip_blank and
+blip_shuffled rerun with the fix (commit e5cc1a6) for all five seeds. Run
+logged in runs/RUNS.md. Five-seed analyses in reports/interim/seeds149-5seeds/
+(seeds.md, ablation.md, .json, .tex) on the main checkout, not committed and
+not copied into reports/submission/ or the paper.
+Verified: experiments/seeds149/final_checks.py: ALL CHECKS PASS (35 ok runs
+per seed, expected n, BLIP predictions differ between real/blank/shuffled in
+every seed, every BLIP row on e5cc1a6). Analysis output lists no failed runs
+or missing pairs.
+Result, fixed BLIP: 0.320 mean macro-F1 (149); real − blank −0.006, real −
+shuffled +0.000, no seed's interval excludes zero. So BLIP now sees the image
+but gains nothing from it. Below TF-IDF in 5/5 seeds (−0.205).
+Not done: matched.json's BLIP row (published single-seed run) is still the
+image-blind version.
+Needs the author: replace the paper's 86-item seed tables with the five-seed
+149-item results; whether to mention the BLIP bug; the tfidf_vit gap (−0.123,
+4/5 seeds below tfidf_logreg).
+
 ## 2026-11-20 · Claude (Opus 5.5, Claude Code) · agent/experiments-blip-fusion
 
 Found: the BLIP baseline never used the image. AutoModel maps
