@@ -13,8 +13,19 @@ or missing pairs.
 Result, fixed BLIP: 0.320 mean macro-F1 (149); real − blank −0.006, real −
 shuffled +0.000, no seed's interval excludes zero. So BLIP now sees the image
 but gains nothing from it. Below TF-IDF in 5/5 seeds (−0.205).
-Not done: matched.json's BLIP row (published single-seed run) is still the
-image-blind version.
+Done (author asked, 2026-11-22): matched.json's BLIP row corrected. No new
+GPU run was needed: the published matched run (Kaggle bundle,
+experiments/kaggle-bundle/bmpb/experiments/matched) and seeds149 seed-42 share
+seed 42, input sha 6d2b0d7a.. and identical fold_item_ids; CLIP 0.387 and
+TF-IDF 0.543 reproduce exactly, and the old local image-blind BLIP reproduces
+the published 0.3613 exactly. So seed-42's fixed BLIP run (e5cc1a6) is the
+matched rerun. experiments/matched-blipfix/ = copy of the published run with
+that BLIP swapped in (old one in _imageblind_blip/); matched_analysis.py
+(PYTHONUTF8=1 on Windows) wrote reports/interim/matched-blipfix/. Only BLIP
+lines differ from reports/submission/matched.md (checked by diff).
+BLIP matched: macro-F1 0.361 -> 0.275 (CI 0.214–0.332); vs TF-IDF −0.181 ->
+−0.268 (−0.366 to −0.166); vs BanglaBERT −0.006 -> −0.092 (−0.200 to +0.014).
+reports/submission/ and the paper are unchanged.
 Needs the author: replace the paper's 86-item seed tables with the five-seed
 149-item results; whether to mention the BLIP bug; the tfidf_vit gap (−0.123,
 4/5 seeds below tfidf_logreg).
